@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>fits reader</title>
+<style>
+#tabbar {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+#tabbar input {
+  display: none;
+}
+
+#tabbar input + label {
+  flex: 1;
+  background: #ccc;
+  padding: 3px 5px;
+  border: 1px solid white;
+  border-bottom: 1px solid;
+}
+
+#tabbar input:checked + label {
+  background: white;
+  border: 1px solid;
+  border-bottom: none;
+  padding: 0px 5px;
+}
+
+#tabbar input:checked + label > span {
+  font-weight: bold;
+}
+
+textarea {
+  font-size: 12px;
+  white-space: pre;
+  margin-top: 0px;
+  border: 1px solid;
+  border-top: none;
+  display: none;
+  flex-basis: 100%;
+}
+
+</style>
+<style>
+/* dynamically filled via js */
+</style>
+
+</head>
+
+<h1 style="text-align: center">Fits explorer</h1>
+
+<label>file:</label> <label for="fileInput" class="input" style="display: inline-block;  text-align: left">Choose file</label><input id="fileInput" type="file" style="display:none" onchange="this.previousElementSibling.textContent = this.previousElementSibling.title = this.files[0].name; doit(this.files[0])"><button onclick="this.previousElementSibling.click()">Browse...</button>
+<a href="https://github.com/mzechmeister/fits" style="float: right;">github</a><br>
+<label>url:</label> <input type="url" id="urlInput" class="input" value="a.fits" onkeyup="if (event.key === 'Enter') doit()"><input type="submit" value="Load" onclick="doit()"><br>
+<br>
+
+<div style="display: inline-block" id="fit">
+<div id="tabbar"></div>
+<div id="fitshdulist"></div>
+</div>
+
+<script>
+
+async function gethdr(filename, pos=0) {
+    var hdu = {extstart: pos}
+    var cards = []
+    // read blockwise
+    while (!cards.slice(-36).includes("END".padEnd(80, " "))) {
+        response = await fetch(filename, {headers: {Range: `bytes=${pos}-${pos+2880-1}`}});
+        if (!response.ok) return null;
+        buf = await response.arrayBuffer()
+        if (buf.byteLength !=2880) break;  // if range is ignored (e.g. python http.server)
+        blkstr = new TextDecoder().decode(buf);
+        cards.push(...blkstr.match(/.{80}/g))
+        pos += 2880
+    }
+
+    hdu.hdrsize = pos - hdu.extstart
+    hdu.extdata = pos
+    hdu.cards = cards
+    hdu.ncards = cards.length
+    hdu.hdr = cards2hdr(cards)
+    hdu.dim = [...Array(hdu.hdr.NAXIS).keys()].map(j => hdu.hdr['NAXIS'+(j+1)])
+    hdu.datasize = hdu.dim.reduce((a,b) => a*b, hdu.hdr.NAXIS && Math.abs(hdu.hdr['BITPIX']/8))
+    padsize = (Math.floor((hdu.datasize-1)/2880) + 1) * 2880
+    hdu.extend = pos + padsize
+    return hdu
+}
+
+function cards2hdr(cards) {
+    hdr = {}
+    for (card of cards) {
+        [key, val, comm] = card.split(/[=/]/);
+        if (val) {
+            val = val.trim()
+            val = val.startsWith("'") ? val.slice(1,-1) :
+                  val == "T" ? true :
+                  val == "F" ? false : +val;
+            hdr[key.trim()] = val
+        }
+    }
+    return hdr
+}
+
+async function readfits(filename) {
+    k = 1
+    hdulist = {0: await gethdr(filename)}
+    while (hdu = await gethdr(filename, hdulist[k-1].extend)) {
+        hdulist[k] = hdu
+        ++k
+    }
+    return hdulist
+}
+
+async function doit() {
+    hdulist = await readfits(urlInput.value)
+    tabbar.innerHTML = ''
+    fitshdulist.innerHTML = ''
+    tabbingstyle = document.getElementsByTagName('style')[1]
+    tabbingstyle.innerHTML = ''
+    for (k in hdulist) {
+        var extname = hdulist[k].hdr["EXTNAME"]
+        extname = extname ? ' ['+extname.trim()+']' : ''
+        tabbar.innerHTML += '<input type="radio" name="exttab"'+ (k ? '':' checked')+' id="tab_'+k+'"><label for="tab_'+k+'"><span>'+k+extname+'</span>: ' + hdulist[k].dim.join(' × ')+'</label>'
+    }
+    for (k in hdulist) {
+        tabbar.innerHTML += '<textarea id="fitshdu_'+k+'" rows="'+hdulist[k].ncards+'" cols="80">'+hdulist[k].cards.join("\n")+'</textarea><br>'
+        tabbingstyle.innerHTML += '#tab_'+k+':checked ~ #fitshdu_'+k+' {display: unset;}\n'
+    }
+    tab_0.checked = 1
+}
+
+doit()
+
+</script>
+
+</html>
