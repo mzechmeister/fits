@@ -47,6 +47,24 @@ li::marker{
   font-size: 10px;
 }
 
+/* remove dot/full stop/period */
+ol {
+  counter-reset: item;
+  padding-left: 2px;
+  margin-left: 40px;
+}
+
+li {
+  counter-increment: item;
+}
+
+li::marker {
+   content: counter(item)"  ";
+}
+
+[for="tab_0"] {
+  margin-left: 40px;
+}
 </style>
 <style>
 /* dynamically filled via js */
