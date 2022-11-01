@@ -21,7 +21,7 @@
 }
 
 #tabbar input:checked + label {
-  background: white;
+  background: #f0f0f0;
   border: 1px solid;
   border-bottom: none;
   padding: 0px 5px;
@@ -34,6 +34,7 @@
 ol {
   font-family: monospace;
   font-size: 12px;
+  background: #f0f0f0;
   white-space: pre;
   margin-top: 0px;
   border: 1px solid;
@@ -65,6 +66,12 @@ li::marker {
 [for="tab_0"] {
   margin-left: 40px;
 }
+
+
+li > span {
+ color: #00c;
+}
+
 </style>
 <style>
 /* dynamically filled via js */
@@ -153,6 +160,8 @@ async function doit() {
         tabbingstyle.innerHTML += '#tab_'+k+':checked ~ #fitshdu_'+k+' {display: unset;}\n'
     }
     tab_0.checked = 1
+    // color the first 8-char word
+    document.querySelectorAll("li").forEach(x => (x.innerHTML = '<span>'+x.innerText.slice(0,8)+'</span>'+x.innerText.slice(8)))
 }
 
 doit()
