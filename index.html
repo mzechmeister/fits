@@ -91,7 +91,7 @@ li::marker {
 <div id="tabbar"></div>
 </div>
 <br>
-<canvas id='fitsdisplay'></canvas>
+<canvas id='fitsdisplay' style="transform: scale(1, -1)"></canvas>
 
 <script>
 
@@ -172,8 +172,6 @@ async function doit(filename) {
     document.querySelectorAll("li").forEach(x => (x.innerHTML = '<span>'+x.innerText.slice(0,8)+'</span>'+x.innerText.slice(8)))
 }
 
-doit(urlInput.value)
-
 async function fitsdata(hdulist, ext=0) {
     hdu = hdulist[ext]
     filename = hdu.file
@@ -214,6 +212,7 @@ function display(a) {
         data[i+3] = 255 - a[i/4]*func.value;   // set opacity
     }
 
+    //ctx.scale(1, -1)
     ctx.putImageData(imgData, 0, 0);
 }
 
@@ -224,6 +223,15 @@ disp.onclick = async () => {
 }
 
 func.onchange = e => {display(d)}
+
+url_kwargs = Object.fromEntries(new URL(window.location).searchParams)
+
+for (var key in url_kwargs) {
+    elem = document.querySelector("#"+key)
+    if (elem) elem.value = url_kwargs[key]
+}
+
+doit(urlInput.value)
 
 </script>
 
