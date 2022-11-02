@@ -119,7 +119,7 @@ async function gethdr(file, pos=0) {
     hdu.hdr = cards2hdr(cards)
     hdu.dim = [...Array(hdu.hdr.NAXIS).keys()].map(j => hdu.hdr['NAXIS'+(j+1)])
     hdu.datasize = hdu.dim.reduce((a,b) => a*b, hdu.hdr.NAXIS && Math.abs(hdu.hdr['BITPIX']/8))
-    padsize = (Math.floor((hdu.datasize-1)/2880) + 1) * 2880
+    padsize = Math.ceil(hdu.datasize/2880) * 2880
     hdu.extend = pos + padsize
     return hdu
 }
