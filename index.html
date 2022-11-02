@@ -83,7 +83,7 @@ li::marker {
 
 <label>file:</label> <label for="fileInput" class="input" style="display: inline-block;  text-align: left">Choose file</label><input id="fileInput" type="file" style="display:none" onchange="this.previousElementSibling.textContent = this.previousElementSibling.title = this.files[0].name; doit(this.files[0])"><button onclick="this.previousElementSibling.click()">Browse...</button>
 <a href="https://github.com/mzechmeister/fits" style="float: right;">github</a><br>
-<label>url:</label> <input type="url" id="urlInput" class="input" value="a.fits" onkeyup="if (event.key === 'Enter') doit(this.value)"><input type="submit" value="Load" onclick="doit(urlInput.value)"><br>
+<label>url:</label> <input type="url" id="url" class="input" value="a.fits" onkeyup="if (event.key === 'Enter') doit(this.value)"><input type="submit" value="Load" onclick="doit(url.value)"><br>
 <input id="func"><button id="disp">display</button>
 <br>
 
@@ -231,7 +231,7 @@ for (var key in url_kwargs) {
     if (elem) elem.value = url_kwargs[key]
 }
 
-doit(urlInput.value).then(async e => {
+doit(url.value).then(async e => {
    if (ext=url_kwargs['ext']) document.querySelector("#tab_"+ext).click()
    if ("disp" in url_kwargs) {
       d = await fitsdata(hdulist, ext=ext||0)
