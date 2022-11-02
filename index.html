@@ -231,7 +231,14 @@ for (var key in url_kwargs) {
     if (elem) elem.value = url_kwargs[key]
 }
 
-doit(urlInput.value)
+doit(urlInput.value).then(async e => {
+   if (ext=url_kwargs['ext']) document.querySelector("#tab_"+ext).click()
+   if ("disp" in url_kwargs) {
+      d = await fitsdata(hdulist, ext=ext||0)
+      display(d)
+   }
+
+})
 
 </script>
 
