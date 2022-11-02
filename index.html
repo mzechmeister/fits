@@ -84,16 +84,19 @@ li::marker {
 <label>file:</label> <label for="fileInput" class="input" style="display: inline-block;  text-align: left">Choose file</label><input id="fileInput" type="file" style="display:none" onchange="this.previousElementSibling.textContent = this.previousElementSibling.title = this.files[0].name; doit(this.files[0])"><button onclick="this.previousElementSibling.click()">Browse...</button>
 <a href="https://github.com/mzechmeister/fits" style="float: right;">github</a><br>
 <label>url:</label> <input type="url" id="urlInput" class="input" value="a.fits" onkeyup="if (event.key === 'Enter') doit(this.value)"><input type="submit" value="Load" onclick="doit(urlInput.value)"><br>
+<input id="func"><button id="disp">display</button>
 <br>
 
 <div style="display: inline-block; width: min-content;" id="fitshdulist">
 <div id="tabbar"></div>
 </div>
+<br>
+<canvas id='fitsdisplay'></canvas>
 
 <script>
 
 async function gethdr(file, pos=0) {
-    var hdu = {extstart: pos}
+    var hdu = {extstart: pos, file: file}
     var cards = []
 
     is_url = typeof file == "string"   // for url
@@ -112,15 +115,17 @@ async function gethdr(file, pos=0) {
         pos += 2880
     }
 
-    hdu.hdrsize = pos - hdu.extstart
-    hdu.extdata = pos
     hdu.cards = cards
     hdu.ncards = cards.length
-    hdu.hdr = cards2hdr(cards)
+    hdu.hdr = hdr = cards2hdr(cards)
+    hdu.bitpix = hdr['BITPIX']
     hdu.dim = [...Array(hdu.hdr.NAXIS).keys()].map(j => hdu.hdr['NAXIS'+(j+1)])
-    hdu.datasize = hdu.dim.reduce((a,b) => a*b, hdu.hdr.NAXIS && Math.abs(hdu.hdr['BITPIX']/8))
+    hdu.datastart = pos
+    hdu.hdrsize = hdu.datastart - hdu.extstart
+    hdu.datasize = hdu.dim.reduce((a,b) => a*b, hdu.hdr.NAXIS && Math.abs(hdu.bitpix/8))
     padsize = Math.ceil(hdu.datasize/2880) * 2880
-    hdu.extend = pos + padsize
+    hdu.dataend = hdu.datastart + hdu.datasize
+    hdu.extend = hdu.datastart + padsize
     return hdu
 }
 
@@ -168,6 +173,57 @@ async function doit(filename) {
 }
 
 doit(urlInput.value)
+
+async function fitsdata(hdulist, ext=0) {
+    hdu = hdulist[ext]
+    filename = hdu.file
+
+    var b = {'32': 4, '-32': 4, '-64': 8}[hdu.bitpix]
+    var NumberArray = {'32': Int32Array,
+                       '-32': Float32Array,
+                       '-64': Float64Array}[hdu.bitpix]
+
+    var start = hdu.datastart
+    var stop = hdu.dataend
+
+    var headers = {Range: `bytes=${start}-${stop-1}`};
+    var response = await fetch(filename, {headers: headers});
+
+    // swap endian
+    buf = await response.arrayBuffer()
+    d = new NumberArray(new Int8Array(buf.slice()).reverse().buffer).reverse()
+
+    d.dim = hdu.dim
+    return d
+}
+
+
+function display(a) {
+    var canvas = fitsdisplay;
+    var ctx = canvas.getContext("2d");
+
+    [canvas.width, canvas.height] = a.dim;
+
+    // get the imageData and pixel array from the canvas
+    var imgData = ctx.getImageData(0,0, ...a.dim);
+    var data = imgData.data;
+
+    // put rgba values
+    for (var i=0; i<data.length; i+=4) {
+        data[i] = 0;
+        data[i+3] = 255 - a[i/4]*func.value;   // set opacity
+    }
+
+    ctx.putImageData(imgData, 0, 0);
+}
+
+disp.onclick = async () => {
+    ext = +document.querySelector('[id^="tab"]:checked').id.slice(4);
+    await fitsdata(hdulist, ext);
+    display(d)
+}
+
+func.onchange = e => {display(d)}
 
 </script>
 
