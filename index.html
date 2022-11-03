@@ -2,6 +2,7 @@
 <html>
 <head>
 <title>fits reader</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 <style>
 #tabbar {
   display: flex;
@@ -71,7 +72,12 @@ li::marker {
   margin-left: 40px;
 }
 
-
+[class*=" fa-"] { 
+  float: right;
+  color: black;
+  padding: 0px 4px;
+}
+ 
 </style>
 <style>
 /* dynamically filled via js */
@@ -82,8 +88,8 @@ li::marker {
 <h1 style="text-align: center">Fits explorer</h1>
 
 <label>file:</label> <label for="fileInput" class="input" style="display: inline-block;  text-align: left">Choose file</label><input id="fileInput" type="file" style="display:none" onchange="this.previousElementSibling.textContent = this.previousElementSibling.title = this.files[0].name; doit(this.files[0])"><button onclick="this.previousElementSibling.click()">Browse...</button>
-<a href="https://github.com/mzechmeister/fits" style="float: right;">github</a><br>
-<label>url:</label> <input type="url" id="url" class="input" value="a.fits" onkeyup="if (event.key === 'Enter') doit(this.value)"><input type="submit" value="Load" onclick="doit(url.value)"><br>
+<a href="https://github.com/mzechmeister/fits""><i class="fab fa-github"></i></a> <a href="" id ="share"><i class="fa fa-share-alt" draggable="true"></i></a><br>
+<label>url:</label> <input type="url" id="url" class="input" value="a.fits" onkeyup="if (event.key === 'Enter') doit(this.value)"><input type="submit" value="Load" onclick="doit(url.value)"><span id="info"></span><br>
 <input id="func"><button id="disp">display</button>
 <br>
 
@@ -91,7 +97,7 @@ li::marker {
 <div id="tabbar"></div>
 </div>
 <br>
-<canvas id='fitsdisplay' style="transform: scale(1, -1)"></canvas>
+<canvas id='fitsdisplay' height="0" style="transform: scale(1, -1)"></canvas>
 
 <script>
 
@@ -220,6 +226,22 @@ disp.onclick = async () => {
     ext = +document.querySelector('[id^="tab"]:checked').id.slice(4);
     await fitsdata(hdulist, ext);
     display(d)
+}
+
+// create shared link
+document.getElementById("share").onclick = function(e) {
+    e.preventDefault()
+    _url = new URL(window.location)
+    _url = _url.origin + _url.pathname
+    args = [url, func].map(x => x.value && x.id+"="+x.value).filter(Boolean)
+    ext = document.querySelector("[id^=tab_]:checked").id.slice(4)
+    // ext = [... document.querySelectorAll("input[name=exttab]")].findIndex(e=> e.checked)
+    if (ext) args.push("ext="+ext)
+    if (fitsdisplay.height) args.push("disp")
+    var link = document.createElement("a")
+    link.href = _url + "?" + args.join("&")
+    link.append(link.href)
+    info.innerHTML = link.outerHTML
 }
 
 func.onchange = e => {display(d)}
