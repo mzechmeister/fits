@@ -98,7 +98,7 @@ li::marker {
 <a href="https://github.com/mzechmeister/fits"><i class="fab fa-github"></i></a> <a href="" id ="share"><i class="fa fa-share-alt" draggable="true"></i></a><br>
 <label>url:</label> <input type="url" id="url" class="input" value="a.fits" onkeyup="if (event.key === 'Enter') doit(this.value)"><input type="submit" value="Load" onclick="doit(url.value)"><span id="info"></span><br>
 <input id="func"><button id="disp">display</button>
-<input id="showhdr" type="checkbox" checked><label>show header</label>
+<input id="showhdr" type="checkbox" checked><label for="showhdr">show header</label>
 <br>
 
 <div style="display: inline-block; width: min-content;" id="fitshdulist">
@@ -250,6 +250,7 @@ document.getElementById("share").onclick = function(e) {
     // ext = [... document.querySelectorAll("input[name=exttab]")].findIndex(e=> e.checked)
     if (ext) args.push("ext="+ext)
     if (fitsdisplay.height) args.push("disp")
+    if (!showhdr.checked) args.push("showhdr=0")
     var link = document.createElement("a")
     link.href = _url + "?" + args.join("&")
     link.append(link.href)
@@ -262,7 +263,10 @@ url_kwargs = Object.fromEntries(new URL(window.location).searchParams)
 
 for (var key in url_kwargs) {
     elem = document.querySelector("#"+key)
-    if (elem) elem.value = url_kwargs[key]
+    if (elem) {
+        if (elem.type == "checkbox") elem.checked = +url_kwargs[key]
+        else elem.value = url_kwargs[key]
+    }
 }
 
 doit(url.value).then(async e => {
