@@ -77,7 +77,14 @@ li::marker {
   color: black;
   padding: 0px 4px;
 }
- 
+
+#showhdr:not(:checked) ~ #fitshdulist > #tabbar > ol {
+  height: 0px;
+  overflow: hidden;
+  padding-top: 0px;
+  padding-bottom: 0px 
+}
+
 </style>
 <style>
 /* dynamically filled via js */
@@ -88,9 +95,10 @@ li::marker {
 <h1 style="text-align: center">Fits explorer</h1>
 
 <label>file:</label> <label for="fileInput" class="input" style="display: inline-block;  text-align: left">Choose file</label><input id="fileInput" type="file" style="display:none" onchange="this.previousElementSibling.textContent = this.previousElementSibling.title = this.files[0].name; doit(this.files[0])"><button onclick="this.previousElementSibling.click()">Browse...</button>
-<a href="https://github.com/mzechmeister/fits""><i class="fab fa-github"></i></a> <a href="" id ="share"><i class="fa fa-share-alt" draggable="true"></i></a><br>
+<a href="https://github.com/mzechmeister/fits"><i class="fab fa-github"></i></a> <a href="" id ="share"><i class="fa fa-share-alt" draggable="true"></i></a><br>
 <label>url:</label> <input type="url" id="url" class="input" value="a.fits" onkeyup="if (event.key === 'Enter') doit(this.value)"><input type="submit" value="Load" onclick="doit(url.value)"><span id="info"></span><br>
 <input id="func"><button id="disp">display</button>
+<input id="showhdr" type="checkbox" checked><label>show header</label>
 <br>
 
 <div style="display: inline-block; width: min-content;" id="fitshdulist">
@@ -125,10 +133,10 @@ async function gethdr(file, pos=0) {
     hdu.ncards = cards.length
     hdu.hdr = hdr = cards2hdr(cards)
     hdu.bitpix = hdr['BITPIX']
-    hdu.dim = [...Array(hdu.hdr.NAXIS).keys()].map(j => hdu.hdr['NAXIS'+(j+1)])
+    hdu.dim = [...Array(hdr.NAXIS).keys()].map(j => hdr['NAXIS'+(j+1)])
     hdu.datastart = pos
     hdu.hdrsize = hdu.datastart - hdu.extstart
-    hdu.datasize = hdu.dim.reduce((a,b) => a*b, hdu.hdr.NAXIS && Math.abs(hdu.bitpix/8))
+    hdu.datasize = hdr.NAXIS && hdu.dim.reduce((a,b) => a*b, Math.abs(hdu.bitpix/8))
     padsize = Math.ceil(hdu.datasize/2880) * 2880
     hdu.dataend = hdu.datastart + hdu.datasize
     hdu.extend = hdu.datastart + padsize
@@ -180,6 +188,7 @@ async function doit(filename) {
 
 async function fitsdata(hdulist, ext=0) {
     hdu = hdulist[ext]
+    if (!hdu.hdr.NAXIS) return null
     filename = hdu.file
 
     var b = {'32': 4, '-32': 4, '-64': 8}[hdu.bitpix]
@@ -203,6 +212,7 @@ async function fitsdata(hdulist, ext=0) {
 
 
 function display(a) {
+    if (!a) {console.log('No data to display.'); return}
     var canvas = fitsdisplay;
     var ctx = canvas.getContext("2d");
 
@@ -259,7 +269,6 @@ doit(url.value).then(async e => {
       d = await fitsdata(hdulist, ext=ext||0)
       display(d)
    }
-
 })
 
 </script>
