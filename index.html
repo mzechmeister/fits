@@ -213,6 +213,8 @@ async function fitsdata(hdulist, ext=0) {
 
 function display(a) {
     if (!a) {console.log('No data to display.'); return}
+    _func = func.value ? new Function("x", "return "+func.value) : (x => x)
+
     var canvas = fitsdisplay;
     var ctx = canvas.getContext("2d");
 
@@ -225,7 +227,7 @@ function display(a) {
     // put rgba values
     for (var i=0; i<data.length; i+=4) {
         data[i] = 0;
-        data[i+3] = 255 - a[i/4]*func.value;   // set opacity
+        data[i+3] = 255*_func(a[i/4]);   // set opacity
     }
 
     //ctx.scale(1, -1)
