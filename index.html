@@ -98,14 +98,14 @@ li::marker {
 <a href="https://github.com/mzechmeister/fits"><i class="fab fa-github"></i></a> <a href="" id ="share"><i class="fa fa-share-alt" draggable="true"></i></a><br>
 <label>url:</label> <input type="url" id="url" class="input" value="a.fits" onkeyup="if (event.key === 'Enter') doit(this.value)"><input type="submit" value="Load" onclick="doit(url.value)"><span id="info"></span><br>
 <input id="func"><button id="disp">display</button>
-<input id="showhdr" type="checkbox" checked><label for="showhdr">show header</label>
+<input id="showhdr" type="checkbox" checked><label for="showhdr">show header</label> <span id="coords"></span>
 <br>
 
 <div style="display: inline-block; width: min-content;" id="fitshdulist">
 <div id="tabbar"></div>
 </div>
 <br>
-<canvas id='fitsdisplay' height="0" style="transform: scale(1, -1)"></canvas>
+<div style="width: 100%; overflow: scroll"><canvas id='fitsdisplay' height="0" style="transform: scale(1, -1)"></canvas></div>
 
 <script>
 
@@ -225,12 +225,13 @@ function display(a) {
     var data = imgData.data;
 
     // put rgba values
-    for (var i=0; i<data.length; i+=4) {
-        data[i] = 0;
-        data[i+3] = 255*_func(a[i/4]);   // set opacity
+    for (var i=0, j=0; i<data.length; i+=4, ++j) {
+        data[i] = data[i+1] = data[i+2] = 0xFF * _func(a[j]);
+        data[i+3] = 0xFF;   // opacity
     }
 
     //ctx.scale(1, -1)
+    ctx.imageSmoothingEnabled = false
     ctx.putImageData(imgData, 0, 0);
 }
 
@@ -255,6 +256,30 @@ document.getElementById("share").onclick = function(e) {
     link.href = _url + "?" + args.join("&")
     link.append(link.href)
     info.innerHTML = link.outerHTML
+}
+
+
+function getMousePos(e) {
+    var rect = fitsdisplay.getBoundingClientRect();
+    var p = {x: e.clientX - rect.left,
+             y: e.clientY - rect.top}
+    p.i = p.x + 1
+    p.j = fitsdisplay.height - (p.y + 1)
+    return p
+}
+
+function z(i, j) {
+    return d[Math.round(i) + fitsdisplay.width * Math.round(j)]
+}
+
+fitsdisplay.onmousemove = e => {
+    p = getMousePos(e);
+    coords.innerHTML = " x: "+p.i.toFixed(3)+" y: "+p.j.toFixed(3) +" value: "+ z(p.i,p.j)+ " color: "+ _func(z(p.i,p.j)).toFixed(6)
+}
+
+fitsdisplay.onclick = e => {
+    p = getMousePos(e);
+    info.innerHTML = " x: "+p.i.toFixed(3)+" y: "+p.j.toFixed(3) +" value: "+ z(p.i,p.j)+ " color: "+ _func(z(p.i,p.j)).toFixed(6)
 }
 
 func.onchange = e => {display(d)}
