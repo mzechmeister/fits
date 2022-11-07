@@ -92,7 +92,8 @@ li::marker {
     image-rendering: optimize-contrast;
     image-rendering: pixelated;
     -ms-interpolation-mode: nearest-neighbor;
-    border: 5px solid #ddd;
+    border: 1px solid #080;
+    transform-origin: 0 0;
 }
 
 </style>
@@ -116,7 +117,7 @@ zoom <input type="range" id="zoom" min="-6" max="6" step="0.5"><input id="zoomfa
 <div id="tabbar"></div>
 </div>
 <br>
-<div style="width: 100%; overflow: scroll; resize: both; height: 400px"><canvas id='fitsdisplay' height="0" style="transform: scale(1, -1)"></canvas></div>
+<div style="width: 100%; overflow: scroll; resize: both; height: 400px; border: 1px solid red"><canvas id='fitsdisplay' tabindex="0" height="0" style="transform: scale(1, -1)"></canvas></div>
 
 <script>
 
@@ -244,6 +245,7 @@ function display(a) {
     //ctx.scale(1, -1)
     ctx.imageSmoothingEnabled = false
     ctx.putImageData(imgData, 0, 0);
+    do_zoom()
 }
 
 disp.onclick = async () => {
@@ -295,11 +297,32 @@ fitsdisplay.onclick = e => {
 
 func.onchange = e => {display(d)}
 
-zoom.oninput = e => {
+fitsdisplay.onkeydown = e => {
+    if (e.key == "+") {++zoom.value; display(d)}
+    else if (e.key == "-") {--zoom.value; display(d)}
+}
+
+
+function do_zoom(){
     scale = Math.pow(2, zoom.value)
     zoomfac.value = scale < 1 ? '1/'+(+(1/scale).toFixed(3)) : +scale.toFixed(3)
-    fitsdisplay.style.transform = "scale("+scale+",-"+scale+")"
+    vp = fitsdisplay.parentElement.getBoundingClientRect()  // "viewport"
+    hp = vp.height
+    wp = vp.width
+    // fitsdisplay.style.transform = "translate("+wp/2+"px,"+hp/2+"px) translate(-50%,-50%) scale("+scale+",-"+scale+")"
+
+    fitsdisplay.style.transform = "scale("+scale+",-"+scale+") translate(0,-100%)"
+    padx = (fitsdisplay.width - fitsdisplay.width*scale) / 2
+    padx = Math.max(0, padx, (wp - fitsdisplay.width*scale)/2)
+    pady = (fitsdisplay.height - fitsdisplay.height*scale) / 2
+    pady = Math.max(0, pady, (hp - fitsdisplay.height*scale)/2)
+    if (padx || pady)
+        fitsdisplay.style.transform = "translate("+padx+"px,"+pady+"px)" + fitsdisplay.style.transform
+
+    fitsdisplay.parentElement.scrollTo(fitsdisplay.width*scale/2-wp/2+padx, fitsdisplay.height*scale/2-hp/2+pady)
 }
+
+zoom.oninput = do_zoom
 
 url_kwargs = Object.fromEntries(new URL(window.location).searchParams)
 
