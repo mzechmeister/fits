@@ -96,6 +96,10 @@ li::marker {
     transform-origin: 0 0;
 }
 
+#x, #y {
+  width: 10ch;
+}
+
 </style>
 <style>
 /* dynamically filled via js */
@@ -109,17 +113,18 @@ li::marker {
 <a href="https://github.com/mzechmeister/fits"><i class="fab fa-github"></i></a> <a href="" id ="share"><i class="fa fa-share-alt" draggable="true"></i></a><br>
 <label>url:</label> <input type="url" id="url" class="input" value="a.fits" onkeyup="if (event.key === 'Enter') doit(this.value)"><input type="submit" value="Load" onclick="doit(url.value)"><span id="info"></span><br>
 <input id="func"><button id="disp">display</button>
-<input id="showhdr" type="checkbox" checked><label for="showhdr">show header</label> <span id="coords"></span>
+<input id="showhdr" type="checkbox" checked><label for="showhdr">show header</label> x: <input id="x"> y: <input id="y"><span id="coords"></span>
 <select id="colormap" onchange="display(d)">
 <option>grey</option>
 <option>bb</option>
+<option></option>
 </select> <label>color map</label>
 <br>
 
 <div style="display: inline-block; width: min-content;" id="fitshdulist">
 <div id="tabbar"></div>
 </div>
-zoom <input type="range" id="zoom" min="-6" max="6" step="0.5"><input id="zoomfac" style="width: 7ch">
+zoom: <input id="zoomfac" style="width: 7ch" onchange="zoom.value=Math.log2(zoomfac.value) ; zoom.oninput()"> <input type="range" id="zoom" min="-6" max="6" step="0.5">
 <input id="sharp" type="checkbox"><label for="sharp">sharp</label>
 <br>
 <div style="width: 100%; overflow: scroll; resize: both; height: 400px; border: 1px solid red" tabindex="0"><canvas id='fitsdisplay' height="0" style="transform: scale(1, -1)"></canvas></div>
@@ -246,7 +251,7 @@ function display(a) {
     var imgData = ctx.getImageData(0,0, ...a.dim);
     var data = imgData.data;
 
-    cm = {bb: cmbb, grey: cmgrey}[colormap.value]
+    cm = {bb: cmbb, grey: cmgrey}[colormap.value] || cmgrey
     // put rgba values
     for (var i=0, j=0; i<data.length; i+=4, ++j) {
         [data[i], data[i+1], data[i+2]] = cm(_func(a[j])).map(x => 0xFF * x);
@@ -270,7 +275,7 @@ document.getElementById("share").onclick = function(e) {
     e.preventDefault()
     _url = new URL(window.location)
     _url = _url.origin + _url.pathname
-    args = [url, func, zoom].filter(x => x.value).map(x => x.id+"="+x.value)
+    args = [url, func, zoom, colormap].filter(x => x.value).map(x => x.id+"="+x.value)
     ext = document.querySelector("[id^=tab_]:checked").id.slice(4)
     // ext = [... document.querySelectorAll("input[name=exttab]")].findIndex(e=> e.checked)
     if (ext) args.push("ext="+ext)
@@ -298,7 +303,9 @@ function z(i, j) {
 
 fitsdisplay.onmousemove = e => {
     p = getMousePos(e);
-    coords.innerHTML = " x: "+p.i.toFixed(3)+" y: "+p.j.toFixed(3) +" value: "+ z(p.i,p.j)+ " color: "+ _func(z(p.i,p.j)).toFixed(6)
+    x.value = p.i.toFixed(3)
+    y.value = p.j.toFixed(3)
+    coords.innerHTML = " value: "+ z(p.i,p.j)+ " color: "+ _func(z(p.i,p.j)).toFixed(6)
 }
 
 fitsdisplay.onclick = e => {
