@@ -110,6 +110,10 @@ li::marker {
 <label>url:</label> <input type="url" id="url" class="input" value="a.fits" onkeyup="if (event.key === 'Enter') doit(this.value)"><input type="submit" value="Load" onclick="doit(url.value)"><span id="info"></span><br>
 <input id="func"><button id="disp">display</button>
 <input id="showhdr" type="checkbox" checked><label for="showhdr">show header</label> <span id="coords"></span>
+<select id="colormap" onchange="display(d)">
+<option>grey</option>
+<option>bb</option>
+</select> <label>color map</label>
 <br>
 
 <div style="display: inline-block; width: min-content;" id="fitshdulist">
@@ -118,7 +122,7 @@ li::marker {
 zoom <input type="range" id="zoom" min="-6" max="6" step="0.5"><input id="zoomfac" style="width: 7ch">
 <input id="sharp" type="checkbox"><label for="sharp">sharp</label>
 <br>
-<div style="width: 100%; overflow: scroll; resize: both; height: 400px; border: 1px solid red"><canvas id='fitsdisplay' height="0" style="transform: scale(1, -1)"></canvas></div>
+<div style="width: 100%; overflow: scroll; resize: both; height: 400px; border: 1px solid red" tabindex="0"><canvas id='fitsdisplay' height="0" style="transform: scale(1, -1)"></canvas></div>
 
 <script>
 
@@ -224,6 +228,11 @@ async function fitsdata(hdulist, ext=0) {
 }
 
 
+// colormaps
+// https://github.com/matplotlib/matplotlib/blob/9f96205464930c9064eb20af462c79ac47c6b254/lib/matplotlib/_cm.py#L158
+cmbb = x => [2 * x, 2 * x - 0.5, 2 * x - 1]  // ds9bb, afmhot
+cmgrey = x => [x, x, x]
+
 function display(a) {
     if (!a) {console.log('No data to display.'); return}
     _func = func.value ? new Function("x", "return "+func.value) : (x => x)
@@ -237,9 +246,10 @@ function display(a) {
     var imgData = ctx.getImageData(0,0, ...a.dim);
     var data = imgData.data;
 
+    cm = {bb: cmbb, grey: cmgrey}[colormap.value]
     // put rgba values
     for (var i=0, j=0; i<data.length; i+=4, ++j) {
-        data[i] = data[i+1] = data[i+2] = 0xFF * _func(a[j]);
+        [data[i], data[i+1], data[i+2]] = cm(_func(a[j])).map(x => 0xFF * x);
         data[i+3] = 0xFF;   // opacity
     }
 
