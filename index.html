@@ -110,12 +110,13 @@ li::marker {
 <label>url:</label> <input type="url" id="url" class="input" value="a.fits" onkeyup="if (event.key === 'Enter') doit(this.value)"><input type="submit" value="Load" onclick="doit(url.value)"><span id="info"></span><br>
 <input id="func"><button id="disp">display</button>
 <input id="showhdr" type="checkbox" checked><label for="showhdr">show header</label> <span id="coords"></span>
-zoom <input type="range" id="zoom" min="-6" max="6" step="0.5"><input id="zoomfac">
 <br>
 
 <div style="display: inline-block; width: min-content;" id="fitshdulist">
 <div id="tabbar"></div>
 </div>
+zoom <input type="range" id="zoom" min="-6" max="6" step="0.5"><input id="zoomfac" style="width: 7ch">
+<input id="sharp" type="checkbox"><label for="sharp">sharp</label>
 <br>
 <div style="width: 100%; overflow: scroll; resize: both; height: 400px; border: 1px solid red"><canvas id='fitsdisplay' tabindex="0" height="0" style="transform: scale(1, -1)"></canvas></div>
 
@@ -310,14 +311,18 @@ function do_zoom(){
     hp = vp.height
     wp = vp.width
     // fitsdisplay.style.transform = "translate("+wp/2+"px,"+hp/2+"px) translate(-50%,-50%) scale("+scale+",-"+scale+")"
+    fitsdisplay.style["margin"] = sharp.checked ? '' : hp+'px '+(wp+fitsdisplay.width*scale-fitsdisplay.width)+'px '+(hp+fitsdisplay.height*scale-fitsdisplay.height)+'px '+ wp+'px'
 
     fitsdisplay.style.transform = "scale("+scale+",-"+scale+") translate(0,-100%)"
     padx = (fitsdisplay.width - fitsdisplay.width*scale) / 2
     padx = Math.max(0, padx, (wp - fitsdisplay.width*scale)/2)
     pady = (fitsdisplay.height - fitsdisplay.height*scale) / 2
     pady = Math.max(0, pady, (hp - fitsdisplay.height*scale)/2)
-    if (padx || pady)
+    if (sharp.checked && (padx || pady))
         fitsdisplay.style.transform = "translate("+padx+"px,"+pady+"px)" + fitsdisplay.style.transform
+
+    if (!sharp.checked) pady = hp
+    if (!sharp.checked) padx = wp
 
     fitsdisplay.parentElement.scrollTo(fitsdisplay.width*scale/2-wp/2+padx, fitsdisplay.height*scale/2-hp/2+pady)
 }
