@@ -118,7 +118,7 @@ li::marker {
 zoom <input type="range" id="zoom" min="-6" max="6" step="0.5"><input id="zoomfac" style="width: 7ch">
 <input id="sharp" type="checkbox"><label for="sharp">sharp</label>
 <br>
-<div style="width: 100%; overflow: scroll; resize: both; height: 400px; border: 1px solid red"><canvas id='fitsdisplay' tabindex="0" height="0" style="transform: scale(1, -1)"></canvas></div>
+<div style="width: 100%; overflow: scroll; resize: both; height: 400px; border: 1px solid red"><canvas id='fitsdisplay' height="0" style="transform: scale(1, -1)"></canvas></div>
 
 <script>
 
@@ -298,7 +298,7 @@ fitsdisplay.onclick = e => {
 
 func.onchange = e => {display(d)}
 
-fitsdisplay.onkeydown = e => {
+document.body.onkeydown = e => {
     if (e.key == "+") {++zoom.value; display(d)}
     else if (e.key == "-") {--zoom.value; display(d)}
 }
