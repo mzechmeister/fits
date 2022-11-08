@@ -290,10 +290,12 @@ document.getElementById("share").onclick = function(e) {
 
 function getMousePos(e) {
     var rect = fitsdisplay.getBoundingClientRect();
+    scale = 2**zoom.value
     var p = {x: e.clientX - rect.left,
-             y: e.clientY - rect.top}
-    p.i = p.x + 1
-    p.j = fitsdisplay.height - (p.y + 1)
+             y: -(e.clientY - rect.bottom)}
+    bw = getComputedStyle(fitsdisplay)["border-width"].slice(0,-2)
+    p.i = p.x / scale + 0.5 - bw   // one based and integer in center
+    p.j = p.y / scale + 0.5 - bw
     return p
 }
 
@@ -322,7 +324,7 @@ document.body.onkeydown = e => {
 
 
 function do_zoom(){
-    scale = Math.pow(2, zoom.value)
+    scale = 2**zoom.value
     zoomfac.value = scale < 1 ? '1/'+(+(1/scale).toFixed(3)) : +scale.toFixed(3)
     vp = fitsdisplay.parentElement.getBoundingClientRect()  // "viewport"
     hp = vp.height
