@@ -107,13 +107,13 @@ li::marker {
 
 </head>
 
-<h1 style="text-align: center">Fits explorer</h1>
+<h1 style="text-align: center">Fits viewer</h1>
 
 <label>file:</label> <label for="fileInput" class="input" style="display: inline-block;  text-align: left">Choose file</label><input id="fileInput" type="file" style="display:none" onchange="this.previousElementSibling.textContent = this.previousElementSibling.title = this.files[0].name; doit(this.files[0])"><button onclick="this.previousElementSibling.click()">Browse...</button>
 <a href="https://github.com/mzechmeister/fits"><i class="fab fa-github"></i></a> <a href="" id ="share"><i class="fa fa-share-alt" draggable="true"></i></a><br>
 <label>url:</label> <input type="url" id="url" class="input" value="a.fits" onkeyup="if (event.key === 'Enter') doit(this.value)"><input type="submit" value="Load" onclick="doit(url.value)"><span id="info"></span><br>
 <input id="func"><button id="disp">display</button>
-<input id="showhdr" type="checkbox" checked><label for="showhdr">show header</label> x: <input id="x" onkeyup="if (event.key === 'Enter') panTo()"> y: <input id="y" onkeyup="if (event.key === 'Enter') panTo()"><span id="coords"></span>
+<input id="showhdr" type="checkbox" checked><label for="showhdr">show header</label> x: <input id="x" onkeyup="if (event.key === 'Enter') panTo()"> y: <input id="y" onkeyup="if (event.key === 'Enter') panTo()"><span id="coords"></span> <input type="button" value="center" onclick="panTo(fitsdisplay.width/2, fitsdisplay.height/2) ">
 <select id="colormap" onchange="display(d)">
 <option>grey</option>
 <option>bb</option>
