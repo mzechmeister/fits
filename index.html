@@ -289,13 +289,24 @@ document.getElementById("share").onclick = function(e) {
 
 
 function getMousePos(e) {
+    return get_ij(e.clientX, e.clientY)
+}
+
+function get_ij(X, Y) {
+    // get image coords from page coords
     var rect = fitsdisplay.getBoundingClientRect();
-    scale = 2**zoom.value
-    var p = {x: e.clientX - rect.left,
-             y: -(e.clientY - rect.bottom)}
+    var p = {x: X - rect.left,
+             y: -(Y - rect.bottom)}
     p.i = p.x / scale + 0.5   // one based and integer in center
     p.j = p.y / scale + 0.5
     return p
+}
+
+function get_icjc() {
+    // get image coords at center of view
+    Xc = fitsdisplay.parentElement.offsetLeft + fitsdisplay.parentElement.clientWidth / 2
+    Yc = fitsdisplay.parentElement.offsetTop + fitsdisplay.parentElement.clientHeight / 2
+    return get_ij(Xc, Yc)
 }
 
 function z(i, j) {
@@ -341,6 +352,7 @@ function panTo(i=null, j=null) {
 
 function do_zoom(){
     scale_old = scale
+    pc = get_icjc()
     scale = 2**zoom.value
     zoomfac.value = scale < 1 ? '1/'+(+(1/scale).toFixed(3)) : +scale.toFixed(3)
     vp = fitsdisplay.parentElement.getBoundingClientRect()  // "viewport"
@@ -359,17 +371,7 @@ function do_zoom(){
     if (!sharp.checked) pady = hp
     if (!sharp.checked) padx = wp
 
-    /*
-    xc = wp / 2
-    yc = vp / 2
-    ic = (xc  - (padx-fitsdisplay.parentElement.scrollLeft)) / scale_old + 0.5 - bw   // one based and integer in center
-    jc = -(yc  - (pady-fitsdisplay.parentElement.scrollTop)) / scale_old + 0.5 - bw   // one based and integer in center
-    xc = ic *scale + (padx-fitsdisplay.parentElement.scrollLeft)
-    yc = -jc *scale + (pady-fitsdisplay.parentElement.scrollTop)
-    fitsdisplay.parentElement.scrollTo(xc, yc)
-    fitsdisplay.parentElement.scrollTo(fitsdisplay.width*scale/2-wp/2+padx, fitsdisplay.height*scale/2-hp/2+pady)
-    */
-    panTo(document.getElementById('x').value, document.getElementById('y').value)
+    panTo(pc.i, pc.j)
 }
 
 zoom.oninput = do_zoom
