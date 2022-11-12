@@ -303,14 +303,14 @@ function z(i, j) {
     return zij == undefined ? NaN : zij
 }
 
-fitsdisplay.onmousemove = e => {
+fitsdisplay.onclick = e => {
     p = getMousePos(e);
     x.value = p.i.toFixed(3)   // one based indexing
     y.value = p.j.toFixed(3)
     coords.innerHTML = " value: "+ z(p.i-1,p.j-1)+ " color: "+ _func(z(p.i-1,p.j-1)).toFixed(6)
 }
 
-fitsdisplay.onclick = e => {
+fitsdisplay.onmousemove = e => {
     p = getMousePos(e);
     info.innerHTML = " x: "+p.i.toFixed(3)+" y: "+p.j.toFixed(3) +" value: "+ z(p.i,p.j)+ " color: "+ _func(z(p.i,p.j)).toFixed(6)
 }
