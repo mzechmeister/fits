@@ -167,6 +167,27 @@ async function gethdr(file, pos=0) {
     padsize = Math.ceil(hdu.datasize/2880) * 2880
     hdu.dataend = hdu.datastart + hdu.datasize
     hdu.extend = hdu.datastart + padsize
+
+    if (hdr['XTENSION'] == "BINTABLE") {
+        hdu.TFIELDS = hdr['TFIELDS']
+        offset = 0
+        hdu.cols = []
+        for (k=0; k++<hdu.TFIELDS;) {
+            col = {k: k-1,
+               name: hdr['TTYPE'+k],   // one-based indexing
+               fmt: hdr['TINFO'+k],
+               annot: hdr['TANNOT'+k],
+               byteOffset: offset
+            }
+            col.byteSize = {"double": 8, "byte": 1}[col.fmt]
+            hdu.cols.push(col)
+            offset += col.byteSize
+        }
+        hdu.rowSize = offset
+        hdu.dim = [hdu.TFIELDS, hdr['NAXIS2']]
+        // https://archive.stsci.edu/fits/fits_standard/node68.html#SECTION001231020000000000000
+    }
+
     return hdu
 }
 
@@ -202,7 +223,7 @@ async function doit(filename) {
     for (k in hdulist) {
         var extname = hdulist[k].hdr["EXTNAME"] || ''
         extname &&= ' ['+extname.trim()+']'
-        var but = hdulist[k].dim.length ? '<button onclick="show('+k+'); return false">' + hdulist[k].dim.join('<span style="padding: 1px;">×</span>') + '</button>' : ''
+        var but = hdulist[k].dim.length ? ' <button onclick="show('+k+'); return false">' + hdulist[k].dim.join('<span style="padding: 1px;">×</span>') + '</button>' : ''
         tabbar.innerHTML += '<input type="radio" name="exttab" id="tab_'+k+'"><label for="tab_'+k+'"><span>'+k+extname+'</span>:' + but + '</label>'
     }
     for (k in hdulist) {
@@ -218,11 +239,6 @@ async function fitsdata(hdulist, ext=0) {
     if (!hdu.hdr.NAXIS) return null
     filename = hdu.file
 
-    var b = {'32': 4, '-32': 4, '-64': 8}[hdu.bitpix]
-    var NumberArray = {'32': Int32Array,
-                       '-32': Float32Array,
-                       '-64': Float64Array}[hdu.bitpix]
-
     var start = hdu.datastart
     var stop = hdu.dataend
 
@@ -231,9 +247,30 @@ async function fitsdata(hdulist, ext=0) {
 
     // swap endian
     buf = await response.arrayBuffer()
-    d = new NumberArray(new Int8Array(buf.slice()).reverse().buffer).reverse()
 
-    d.dim = hdu.dim
+    if (hdu.cols) {
+        // fits bintable
+        view = new DataView(buf, 0)
+        rowsize = hdu.rowSize
+        d = {}
+        for (col of hdu.cols) {
+            getter = {"double": 'getFloat64', "byte": 'getInt8'}[col.fmt]
+            dk = []
+            for (i=col.byteOffset; i<hdu.datasize; i+=rowsize) {
+                dk.push(view[getter](i))
+            }
+            d[col.name] = d[col.k] = dk
+        }
+        d.dim = hdu.dim
+    } else {
+        // fits image
+        var b = {'32': 4, '-32': 4, '-64': 8}[hdu.bitpix]
+        var NumberArray = {'32': Int32Array,
+                       '-32': Float32Array,
+                       '-64': Float64Array}[hdu.bitpix]
+        d = new NumberArray(new Int8Array(buf.slice()).reverse().buffer).reverse()
+        d.dim = hdu.dim
+    }
     return d
 }
 
@@ -337,7 +374,7 @@ document.body.onkeydown = e => {
 }
 
 
-scale = 1
+scale = null
 
 function panTo(i=null, j=null) {
     if (i===null) {
@@ -354,8 +391,8 @@ function panTo(i=null, j=null) {
 }
 
 function do_zoom(){
-    scale_old = scale
-    pc = get_icjc()
+    // zoom to center as fallback
+    pc = scale == null ?  {i: fitsdisplay.width/2, j: fitsdisplay.height/2} : get_icjc()
     scale = 2**zoom.value
     zoomfac.value = scale < 1 ? '1/'+(+(1/scale).toFixed(3)) : +scale.toFixed(3)
     vp = fitsdisplay.parentElement.getBoundingClientRect()  // "viewport"
