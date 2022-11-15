@@ -26,9 +26,8 @@ async function gethdr(file, pos=0) {
     hdu.datastart = pos
     hdu.hdrsize = hdu.datastart - hdu.extstart
     hdu.datasize = hdr.NAXIS && hdu.dim.reduce((a,b) => a*b, Math.abs(hdu.bitpix/8))
-    padsize = Math.ceil(hdu.datasize/2880) * 2880
     hdu.dataend = hdu.datastart + hdu.datasize
-    hdu.extend = hdu.datastart + padsize
+    hdu.extend = Math.ceil(hdu.dataend/2880) * 2880   // pad size
     hdu.fileend = +response.headers.get("content-range").split('/')[1]
     hdu.last = hdu.extend == hdu.fileend
 
