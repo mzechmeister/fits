@@ -112,11 +112,13 @@ async function fitsdata(hdulist, ext=0) {
         d.dim = hdu.dim
     } else {
         // fits image
-        var b = {'32': 4, '-32': 4, '-64': 8}[hdu.bitpix]
+        var b = {'32': 4, '-32': 4, '64': 8, '-64': 8}[hdu.bitpix]
         var NumberArray = {'32': Int32Array,
                        '-32': Float32Array,
+                       '64': BigInt64Array,
                        '-64': Float64Array}[hdu.bitpix]
         d = new NumberArray(new Int8Array(buf.slice()).reverse().buffer).reverse()
+        if (hdu.bitpix == 64) d = [...d].map(Number)   // convert BigInt64Array to array (to prevent: can't convert BigInt to number)
         d.dim = hdu.dim
     }
     return d
