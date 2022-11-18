@@ -28,7 +28,7 @@ async function gethdr(file, pos=0) {
     hdu.datasize = hdr.NAXIS && hdu.dim.reduce((a,b) => a*b, Math.abs(hdu.bitpix/8))
     hdu.dataend = hdu.datastart + hdu.datasize
     hdu.extend = Math.ceil(hdu.dataend/2880) * 2880   // pad size
-    hdu.fileend = +response.headers.get("content-range").split('/')[1]
+    hdu.fileend = is_url ? +response.headers.get("content-range").split('/')[1] : file.size
     hdu.last = hdu.extend == hdu.fileend
 
     if (hdr['XTENSION'] == "BINTABLE") {
