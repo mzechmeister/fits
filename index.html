@@ -74,8 +74,11 @@ li::marker {
   margin-left: 40px;
 }
 
-[class*=" fa-"] {
+.fa-github, .fa-share-alt {
   float: right;
+}
+
+[class*=" fa-"] {
   color: black;
   padding: 0px 4px;
 }
@@ -145,8 +148,8 @@ async function doit(filename) {
     for (k in hdulist) {
         var extname = hdulist[k].hdr["EXTNAME"] || ''
         extname &&= ' ['+extname.trim()+']'
-        var but = hdulist[k].dim.length ? ' <button onclick="show('+k+'); return false">' + hdulist[k].dim.join('<span style="padding: 1px;">×</span>') + '</button>' : ''
-        tabbar.innerHTML += '<input type="radio" name="exttab" id="tab_'+k+'"><label for="tab_'+k+'"><span>'+k+extname+'</span>:' + but + '</label>'
+        var but = hdulist[k].dim.length ? ' <button onclick="show('+k+'); return false">'+ (hdulist[k].cols?'<i class="fas fa-chart-line"></i>':'<i class="fas fa-image"></i>') + hdulist[k].dim.join('<span style="padding: 1px;">×</span>') + '</button>' : ''
+        tabbar.innerHTML += '<input type="radio" name="exttab" id="tab_'+k+'"><label for="tab_'+k+'"><span>'+k+extname+'</span>:' +  but + '</label>'
     }
     for (k in hdulist) {
         tabbar.innerHTML += '<ol id="fitshdu_'+k+'"><li>'+hdulist[k].cards.join("\n<li>")+'</ol>'
