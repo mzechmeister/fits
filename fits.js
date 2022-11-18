@@ -2,15 +2,13 @@ async function gethdr(file, pos=0) {
     var hdu = {extstart: pos, file: file}
     var cards = []
 
-    is_url = typeof file == "string"   // for url
-
     // read blockwise
     while (!cards.slice(-36).includes("END".padEnd(80, " "))) {
-        if (is_url) {
+        if (file.size) {
+            response = file.slice(pos, pos+2880)  // exclusive
+        } else {
             response = await fetch(file, {headers: {Range: `bytes=${pos}-${pos+2880-1}`}});
             if (!response.ok) return null;
-        } else {
-            response = file.slice(pos, pos+2880)  // exclusive
         }
         buf = await response.text()
         if (buf.length != 2880) return null;  // if range is ignored (e.g. python http.server)
@@ -28,7 +26,7 @@ async function gethdr(file, pos=0) {
     hdu.datasize = hdr.NAXIS && hdu.dim.reduce((a,b) => a*b, Math.abs(hdu.bitpix/8))
     hdu.dataend = hdu.datastart + hdu.datasize
     hdu.extend = Math.ceil(hdu.dataend/2880) * 2880   // pad size
-    hdu.fileend = is_url ? +response.headers.get("content-range").split('/')[1] : file.size
+    hdu.fileend = file.size || +response.headers.get("content-range").split('/')[1]
     hdu.last = hdu.extend == hdu.fileend
 
     if (hdr['XTENSION'] == "BINTABLE") {
@@ -82,13 +80,18 @@ async function readfits(file) {
 async function fitsdata(hdulist, ext=0) {
     hdu = hdulist[ext]
     if (!hdu.hdr.NAXIS) return null
-    filename = hdu.file
+    file = hdu.file
 
     var start = hdu.datastart
     var stop = hdu.dataend
 
-    var headers = {Range: `bytes=${start}-${stop-1}`};
-    var response = await fetch(filename, {headers: headers});
+    if (file.size) {
+        var response = file.slice(start, stop)
+
+    } else {
+        var headers = {Range: `bytes=${start}-${stop-1}`};
+        var response = await fetch(file, {headers: headers});
+    }
 
     // swap endian
     buf = await response.arrayBuffer()
