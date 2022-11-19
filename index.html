@@ -127,7 +127,7 @@ colfunc: <input id="func">
 <option>bb</option>
 <option></option>
 </select>
-x: <input id="x" onkeyup="if (event.key === 'Enter') panTo()"> y: <input id="y" onkeyup="if (event.key === 'Enter') panTo()"><span id="coords"></span> <input type="button" value="center" onclick="panTo(fitsdisplay.width/2, fitsdisplay.height/2) ">
+x: <input id="x" onkeyup="if (event.key === 'Enter') panTo()"> y: <input id="y" onkeyup="if (event.key === 'Enter') panTo()"><span id="coords"></span> <input type="button" value="center" onclick="panTo(fitsdisplay.width/2+0.5, fitsdisplay.height/2+0.5) ">
 <br>
 
 <div style="display: inline-block; width: min-content;" id="fitshdulist">
@@ -228,8 +228,8 @@ function get_ij(X, Y) {
 
 function get_icjc() {
     // get image coords at center of view
-    Xc = fitsdisplay.parentElement.offsetLeft + fitsdisplay.parentElement.clientWidth / 2
-    Yc = fitsdisplay.parentElement.offsetTop + fitsdisplay.parentElement.clientHeight / 2
+    Xc = fitsdisplay.parentElement.offsetLeft + fitsdisplay.parentElement.clientWidth / 2 + 1.5
+    Yc = fitsdisplay.parentElement.offsetTop + fitsdisplay.parentElement.clientHeight / 2 + 0.5
     return get_ij(Xc, Yc)
 }
 
@@ -279,10 +279,12 @@ function do_zoom(){
     pc = scale == null ?  {i: fitsdisplay.width/2, j: fitsdisplay.height/2} : get_icjc()
     scale = 2**zoom.value
     zoomfac.value = scale < 1 ? '1/'+(+(1/scale).toFixed(3)) : +scale.toFixed(3)
+
+    scrollBarWidth = fitsdisplay.parentElement.offsetWidth - fitsdisplay.parentElement.clientWidth;
     vp = fitsdisplay.parentElement.getBoundingClientRect()  // "viewport"
-    hp = vp.height
-    wp = vp.width
-    fitsdisplay.style["margin"] = sharp.checked ? '' : hp+'px '+(wp+fitsdisplay.width*scale-fitsdisplay.width)+'px '+(hp+fitsdisplay.height*scale-fitsdisplay.height)+'px '+ wp+'px'
+    hp = vp.height - scrollBarWidth
+    wp = vp.width - scrollBarWidth
+    fitsdisplay.style["margin"] = sharp.checked ? '' : hp+'px '+(wp+fitsdisplay.width*scale-fitsdisplay.width+1)+'px '+(hp+fitsdisplay.height*scale-fitsdisplay.height-1)+'px '+ wp+'px'
 
     fitsdisplay.style.transform = "scale("+scale+",-"+scale+") translate(0,-100%)"
     padx = (fitsdisplay.width - fitsdisplay.width*scale) / 2
