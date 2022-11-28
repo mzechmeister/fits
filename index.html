@@ -87,6 +87,10 @@ li::marker {
   padding: 0px 4px;
 }
 
+#func::placeholder {
+  color: grey;
+}
+
 #unselect {
    display: none;
 }
@@ -125,7 +129,7 @@ li::marker {
 <label>file:</label> <label for="fileInput" class="input" style="display: inline-block;  text-align: left">Choose file</label> <input id="fileInput" type="file" style="display:none" onchange="this.previousElementSibling.textContent = this.previousElementSibling.title = this.files[0].name; doit(this.files[0])"><button onclick="this.previousElementSibling.click()">Browse...</button>
 <a href="https://github.com/mzechmeister/fits"><i class="fab fa-github"></i></a> <a href="" id ="share"><i class="fa fa-share-alt" draggable="true"></i></a><br>
 <label>url:</label> <input type="url" id="url" class="input" value="a.fits" onkeyup="if (event.key === 'Enter') doit(this.value)"><input type="submit" value="Load" onclick="doit(url.value)"> <span id="info"></span><br>
-colfunc: <input id="func">
+colfunc: <input id="func" placeholder="x">
 <label>color map:</label> <select id="colormap" onchange="display(d)">
 <option>grey</option>
 <option>bb</option>
@@ -170,7 +174,7 @@ cmgrey = x => [x, x, x]
 
 function display(a) {
     if (!a) {console.log('No data to display.'); return}
-    _func = func.value ? new Function("x", "return "+func.value) : (x => x)
+    _func = new Function("x", "return " + (func.value || func.placeholder))
 
     var canvas = fitsdisplay;
     var ctx = canvas.getContext("2d");
@@ -194,9 +198,16 @@ function display(a) {
     do_zoom()
 }
 
+function nanMinMax(x) {
+   var u = x.filter(xi => !Number.isNaN(xi));
+   return [Math.min(...u), Math.max(...u)]
+}
+
 show = async (ext) => {
     await fitsdata(hdulist, ext);
-    d.ext = ext
+    d.ext = ext;
+    [d.min, d.max] = nanMinMax(d);
+    func.placeholder  = '(x-('+d.min+')) / ' + (d.max-d.min);
     display(d)
 }
 
