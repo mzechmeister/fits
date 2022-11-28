@@ -233,7 +233,7 @@ function get_ij(X, Y) {
 function get_icjc() {
     // get image coords at center of view
     Xc = fitsdisplay.parentElement.offsetLeft + fitsdisplay.parentElement.clientWidth / 2 + 1.5
-    Yc = fitsdisplay.parentElement.offsetTop + fitsdisplay.parentElement.clientHeight / 2 + 0.5
+    Yc = fitsdisplay.parentElement.offsetTop + fitsdisplay.parentElement.clientHeight / 2 + 0.5 - window.scrollY
     return get_ij(Xc, Yc)
 }
 
