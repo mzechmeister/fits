@@ -78,6 +78,10 @@ li::marker {
   float: right;
 }
 
+.fa-bars {
+  rotate: 90deg;
+}
+
 [class*=" fa-"] {
   color: black;
   padding: 0px 4px;
@@ -118,7 +122,7 @@ li::marker {
 
 <h1 style="text-align: center">Fits viewer</h1>
 
-<label>file:</label> <label for="fileInput" class="input" style="display: inline-block;  text-align: left">Choose file</label><input id="fileInput" type="file" style="display:none" onchange="this.previousElementSibling.textContent = this.previousElementSibling.title = this.files[0].name; doit(this.files[0])"><button onclick="this.previousElementSibling.click()">Browse...</button>
+<label>file:</label> <label for="fileInput" class="input" style="display: inline-block;  text-align: left">Choose file</label> <input id="fileInput" type="file" style="display:none" onchange="this.previousElementSibling.textContent = this.previousElementSibling.title = this.files[0].name; doit(this.files[0])"><button onclick="this.previousElementSibling.click()">Browse...</button>
 <a href="https://github.com/mzechmeister/fits"><i class="fab fa-github"></i></a> <a href="" id ="share"><i class="fa fa-share-alt" draggable="true"></i></a><br>
 <label>url:</label> <input type="url" id="url" class="input" value="a.fits" onkeyup="if (event.key === 'Enter') doit(this.value)"><input type="submit" value="Load" onclick="doit(url.value)"> <span id="info"></span><br>
 colfunc: <input id="func">
@@ -148,7 +152,7 @@ async function doit(filename) {
     for (k in hdulist) {
         var extname = hdulist[k].hdr["EXTNAME"] || ''
         extname &&= ' ['+extname.trim()+']'
-        var but = hdulist[k].dim.length ? ' <button onclick="show('+k+'); return false">'+ (hdulist[k].cols?'<i class="fas fa-chart-line"></i>':'<i class="fas fa-image"></i>') + hdulist[k].dim.join('<span style="padding: 1px;">×</span>') + '</button>' : ''
+        var but = hdulist[k].dim.length ? ' <button onclick="show('+k+'); return false">'+ (hdulist[k].cols?'<i class="fas fa-bars"></i>':'<i class="fas fa-image"></i>') + hdulist[k].dim.join('<span style="padding: 1px;">×</span>') + '</button>' : ''
         tabbar.innerHTML += '<input type="radio" name="exttab" id="tab_'+k+'"><label for="tab_'+k+'"><span>'+k+extname+'</span>:' +  but + '</label>'
     }
     for (k in hdulist) {
