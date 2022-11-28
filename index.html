@@ -238,7 +238,7 @@ function get_icjc() {
 }
 
 function z(i, j) {
-    var zij = d[Math.round(i) + fitsdisplay.width * Math.round(j)]
+    var zij = d[Math.round(i-1) + fitsdisplay.width * Math.round(j-1)]
     return zij == undefined ? NaN : zij
 }
 
@@ -246,7 +246,7 @@ fitsdisplay.onclick = e => {
     p = getMousePos(e);
     x.value = p.i.toFixed(3)   // one based indexing
     y.value = p.j.toFixed(3)
-    coords.innerHTML = " value: "+ z(p.i-1,p.j-1)+ " color: "+ _func(z(p.i-1,p.j-1)).toFixed(6)
+    coords.innerHTML = " value: "+ z(p.i,p.j)+ " color: "+ _func(z(p.i,p.j)).toFixed(6)
 }
 
 fitsdisplay.onmousemove = e => {
