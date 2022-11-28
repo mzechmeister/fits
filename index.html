@@ -152,7 +152,7 @@ async function doit(filename) {
     for (k in hdulist) {
         var extname = hdulist[k].hdr["EXTNAME"] || ''
         extname &&= ' ['+extname.trim()+']'
-        var but = hdulist[k].dim.length ? ' <button onclick="show('+k+'); return false">'+ (hdulist[k].cols?'<i class="fas fa-bars"></i>':'<i class="fas fa-image"></i>') + hdulist[k].dim.join('<span style="padding: 1px;">×</span>') + '</button>' : ''
+        var but = hdulist[k].dim.length ? ' <button onclick="show('+k+'); return false">'+ (hdulist[k].cols?'<i class="fas fa-bars"></i>':'<i class="fas fa-image"></i>') + hdulist[k].dim.join('<span style="padding: 1px;">&times;</span>') + '</button>' : ''
         tabbar.innerHTML += '<input type="radio" name="exttab" id="tab_'+k+'"><label for="tab_'+k+'"><span>'+k+extname+'</span>:' +  but + '</label>'
     }
     for (k in hdulist) {
@@ -280,7 +280,7 @@ function panTo(i=null, j=null) {
 
 function do_zoom(){
     // zoom to center as fallback
-    pc = scale == null ?  {i: fitsdisplay.width/2, j: fitsdisplay.height/2} : get_icjc()
+    pc = scale == null ?  {i: fitsdisplay.width/2+0.5, j: fitsdisplay.height/2+0.5} : get_icjc()
     scale = 2**zoom.value
     zoomfac.value = scale < 1 ? '1/'+(+(1/scale).toFixed(3)) : +scale.toFixed(3)
 
