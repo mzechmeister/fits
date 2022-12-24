@@ -72,6 +72,11 @@ li::marker {
   width: 10ch;
 }
 
+.colname {
+  background: lightgrey;
+  margin: 1px;
+}
+
 </style>
 <style>
 /* dynamically filled via js */
@@ -109,6 +114,7 @@ zoom: <input id="zoomfac" style="width: 7ch" onchange="zoom.value=Math.log2(zoom
 async function doit(filename) {
     hdulist = await readfits(filename)
     obj = hdulist[0].hdr['OBJECT']
+    hduinfo.onclick = e => e.target.className!="colname"   // ignore colnames in clicks
     hduinfo.innerHTML = hdulist[0].file + (obj? ' ['+obj+']': '')
     for (hdu of hdulist) {
         // make hduinfo
@@ -116,7 +122,10 @@ async function doit(filename) {
         var extname = hdu.hdr["EXTNAME"] || ''
         extname &&= ' ['+extname.trim()+']'
         var but = hdu.dim.length ? ' <button onclick="show('+k+'); return false">'+ (hdu.cols?'<i class="fas fa-bars"></i>':'<i class="fas fa-image"></i>') + hdu.dim.join('<span style="padding: 1px;">&times;</span>') + '</button>' : ''
-        hduinfo.innerHTML += '<details><summary>'+k+extname+':'+ but +'</summary>' +
+        var colnames = ''
+        if (hdu.cols) for (col of hdu.cols) colnames += '<span class="colname">'+col.name+'</span>'
+
+        hduinfo.innerHTML += '<details><summary>'+k+extname+':'+ but + colnames + '</summary>' +
             ' <ol><li>'+hdu.cards.join("\n<li>")+'</ol>' +
             '</details>'
     }
