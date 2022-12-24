@@ -37,11 +37,11 @@ async function gethdr(file, pos=0) {
         for (k=0; k++<hdu.TFIELDS;) {
             col = {k: k-1,
                name: hdr['TTYPE'+k].trim(),   // one-based indexing
-               fmt: hdr['TINFO'+k],
+               fmt: hdr['TFORM'+k].trim(),
                annot: hdr['TANNOT'+k],
                byteOffset: offset
             }
-            col.byteSize = {"double": 8, "byte": 1}[col.fmt]
+            col.byteSize = {"J": 4, "D": 8, "1D": 8, "1L": 1}[col.fmt]
             hdu.cols.push(col)
             offset += col.byteSize
         }
