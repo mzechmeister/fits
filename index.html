@@ -5,35 +5,6 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 <script src='fits.js'></script>
 <style>
-#tabbar {
-  display: flex;
-  flex-wrap: wrap;
-}
-
-#tabbar input {
-  display: none;
-}
-
-#tabbar input + label {
-  flex: 1;
-  background: #ccc;
-  padding: 3px 5px;
-  border: 1px solid white;
-  border-bottom: 1px solid;
-}
-
-#tabbar input:checked + label {
-  background: #f9f9f9;
-  border: 1px solid;
-  border-bottom: none;
-  padding: 0px 5px;
-  pointer-events: none;
-}
-
-#tabbar input:checked + label > span:first-child {
-  font-weight: bold;
-}
-
 ol {
   width: 80ch;
   font-family: monospace;
@@ -42,8 +13,6 @@ ol {
   white-space: pre;
   margin-top: 0px;
   border: 1px solid;
-  border-top: none;
-  display: none;
 }
 
 li::marker {
@@ -70,10 +39,6 @@ li::marker {
    content: counter(item)"  ";
 }
 
-[for="tab_0"] {
-  margin-left: 40px;
-}
-
 .fa-github, .fa-share-alt {
   float: right;
 }
@@ -91,16 +56,6 @@ li::marker {
   color: grey;
 }
 
-#unselect {
-   display: none;
-}
-
-#unchecked:not(:checked) ~ #fitshdulist > #tabbar > ol {
-  height: 0px;
-  overflow: hidden;
-  padding-top: 0px;
-  padding-bottom: 0px
-}
 
 #fitsdisplay {
     image-rendering: optimizeSpeed;
@@ -128,7 +83,11 @@ li::marker {
 
 <label>file:</label> <label for="fileInput" class="input" style="display: inline-block;  text-align: left">Choose file</label> <input id="fileInput" type="file" style="display:none" onchange="this.previousElementSibling.textContent = this.previousElementSibling.title = this.files[0].name; doit(this.files[0])"><button onclick="this.previousElementSibling.click()">Browse...</button>
 <a href="https://github.com/mzechmeister/fits"><i class="fab fa-github"></i></a> <a href="" id ="share"><i class="fa fa-share-alt" draggable="true"></i></a><br>
-<label>url:</label> <input type="url" id="url" class="input" value="a.fits" onkeyup="if (event.key === 'Enter') doit(this.value)"><input type="submit" value="Load" onclick="doit(url.value)"> <span id="info"></span><br>
+<label>url:</label> <input type="url" id="url" class="input" value="a.fits" onkeyup="if (event.key === 'Enter') doit(this.value)"><input type="submit" value="Load" onclick="doit(url.value)">
+
+<div id="hduinfo"></div>
+
+<span id="info"></span><br>
 colfunc: <input id="func" placeholder="x">
 <label>color map:</label> <select id="colormap" onchange="display(d)">
 <option>grey</option>
@@ -139,7 +98,6 @@ x: <input id="x" onkeyup="if (event.key === 'Enter') panTo()"> y: <input id="y" 
 <br>
 
 <div style="display: inline-block; width: min-content;" id="fitshdulist">
-<input type="radio" name="exttab" id="unselect"><label id="tabbar" for="unselect"></label>
 </div>
 zoom: <input id="zoomfac" style="width: 7ch" onchange="zoom.value=Math.log2(zoomfac.value) ; zoom.oninput()"> <input type="range" id="zoom" min="-6" max="6" step="0.5">
 <input id="sharp" type="checkbox"><label for="sharp">sharp</label>
@@ -150,21 +108,17 @@ zoom: <input id="zoomfac" style="width: 7ch" onchange="zoom.value=Math.log2(zoom
 
 async function doit(filename) {
     hdulist = await readfits(filename)
-    tabbar.innerHTML = '<ol id="dummywidth" style="display: block; height: 0px; overflow: hidden; visibility: hidden; margin-bottom: 0px;"><li>'+" ".padEnd(80) +'</ol>'
-    tabbingstyle = document.getElementsByTagName('style')[1]
-    tabbingstyle.innerHTML = ''
+    obj = hdulist[0].hdr['OBJECT']
+    hduinfo.innerHTML = hdulist[0].file + (obj? ' ['+obj+']': '')
     for (hdu of hdulist) {
-        // make tabs
+        // make hduinfo
         k = hdu.extnum
         var extname = hdu.hdr["EXTNAME"] || ''
         extname &&= ' ['+extname.trim()+']'
         var but = hdu.dim.length ? ' <button onclick="show('+k+'); return false">'+ (hdu.cols?'<i class="fas fa-bars"></i>':'<i class="fas fa-image"></i>') + hdu.dim.join('<span style="padding: 1px;">&times;</span>') + '</button>' : ''
-        tabbar.innerHTML += '<input type="radio" name="exttab" id="tab_'+k+'"><label for="tab_'+k+'"><span>'+k+extname+'</span>:' +  but + '</label>'
-    }
-    for (hdu of hdulist) {
-        // append headers
-        tabbar.innerHTML += '<ol id="fitshdu_'+hdu.extnum+'"><li>'+hdu.cards.join("\n<li>")+'</ol>'
-        tabbingstyle.innerHTML += '#tab_'+hdu.extnum+':checked ~ #fitshdu_'+hdu.extnum+' {display: unset;}\n'
+        hduinfo.innerHTML += '<details><summary>'+k+extname+':'+ but +'</summary>' +
+            ' <ol><li>'+hdu.cards.join("\n<li>")+'</ol>' +
+            '</details>'
     }
     // color the first 8-char word
     document.querySelectorAll("li").forEach(x => (x.innerHTML = '<span>'+x.innerText.slice(0,8)+'</span>'+x.innerText.slice(8)))
