@@ -28,6 +28,7 @@ async function gethdr(file, pos=0) {
     hdu.extend = Math.ceil(hdu.dataend/2880) * 2880   // pad size
     hdu.fileend = file.size || +response.headers.get("content-range").split('/')[1]
     hdu.last = hdu.extend == hdu.fileend
+    hdu.extname = hdr['EXTNAME'] && hdr['EXTNAME'].trim()
 
     if (hdr['XTENSION'] == "BINTABLE") {
         hdu.TFIELDS = hdr['TFIELDS']
@@ -68,12 +69,14 @@ function cards2hdr(cards) {
 }
 
 async function readfits(file) {
-    hdulist = []
+    hdulist = {}
     hdu = {extend: 0}
-    do {
-        hdu = await gethdr(file, hdu.extend)
-        hdulist.push(hdu)
-    } while (!hdu.last)
+    var k = 0
+    while (!hdu.last) {
+        hdulist[k] = hdu = await gethdr(file, hdu.extend)
+        if (hdu.extname) Object.defineProperty(hdulist, hdu.extname, {value: hdu})   // make non-enumberale to prevent duplicate for-in looping
+        k++
+    }
     return hdulist
 }
 
