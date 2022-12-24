@@ -36,7 +36,7 @@ async function gethdr(file, pos=0) {
         hdu.cols = []
         for (k=0; k++<hdu.TFIELDS;) {
             col = {k: k-1,
-               name: hdr['TTYPE'+k],   // one-based indexing
+               name: hdr['TTYPE'+k].trim(),   // one-based indexing
                fmt: hdr['TINFO'+k],
                annot: hdr['TANNOT'+k],
                byteOffset: offset

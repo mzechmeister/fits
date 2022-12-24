@@ -74,7 +74,7 @@ li::marker {
 
 .colname {
   background: lightgrey;
-  margin: 1px;
+  padding: 0px 2px;
 }
 
 </style>
@@ -123,7 +123,7 @@ async function doit(filename) {
         extname &&= ' ['+extname.trim()+']'
         var but = hdu.dim.length ? ' <button onclick="show('+k+'); return false">'+ (hdu.cols?'<i class="fas fa-bars"></i>':'<i class="fas fa-image"></i>') + hdu.dim.join('<span style="padding: 1px;">&times;</span>') + '</button>' : ''
         var colnames = ''
-        if (hdu.cols) for (col of hdu.cols) colnames += '<span class="colname">'+col.name+'</span>'
+        if (hdu.cols) for (col of hdu.cols) colnames += ' <span class="colname">'+col.name+'</span>'
 
         hduinfo.innerHTML += '<details><summary>'+k+extname+':'+ but + colnames + '</summary>' +
             ' <ol><li>'+hdu.cards.join("\n<li>")+'</ol>' +
