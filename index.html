@@ -153,15 +153,18 @@ async function doit(filename) {
     tabbar.innerHTML = '<ol id="dummywidth" style="display: block; height: 0px; overflow: hidden; visibility: hidden; margin-bottom: 0px;"><li>'+" ".padEnd(80) +'</ol>'
     tabbingstyle = document.getElementsByTagName('style')[1]
     tabbingstyle.innerHTML = ''
-    for (k in hdulist) {
-        var extname = hdulist[k].hdr["EXTNAME"] || ''
+    for (hdu of hdulist) {
+        // make tabs
+        k = hdu.extnum
+        var extname = hdu.hdr["EXTNAME"] || ''
         extname &&= ' ['+extname.trim()+']'
-        var but = hdulist[k].dim.length ? ' <button onclick="show('+k+'); return false">'+ (hdulist[k].cols?'<i class="fas fa-bars"></i>':'<i class="fas fa-image"></i>') + hdulist[k].dim.join('<span style="padding: 1px;">&times;</span>') + '</button>' : ''
+        var but = hdu.dim.length ? ' <button onclick="show('+k+'); return false">'+ (hdu.cols?'<i class="fas fa-bars"></i>':'<i class="fas fa-image"></i>') + hdu.dim.join('<span style="padding: 1px;">&times;</span>') + '</button>' : ''
         tabbar.innerHTML += '<input type="radio" name="exttab" id="tab_'+k+'"><label for="tab_'+k+'"><span>'+k+extname+'</span>:' +  but + '</label>'
     }
-    for (k in hdulist) {
-        tabbar.innerHTML += '<ol id="fitshdu_'+k+'"><li>'+hdulist[k].cards.join("\n<li>")+'</ol>'
-        tabbingstyle.innerHTML += '#tab_'+k+':checked ~ #fitshdu_'+k+' {display: unset;}\n'
+    for (hdu of hdulist) {
+        // append headers
+        tabbar.innerHTML += '<ol id="fitshdu_'+hdu.extnum+'"><li>'+hdu.cards.join("\n<li>")+'</ol>'
+        tabbingstyle.innerHTML += '#tab_'+hdu.extnum+':checked ~ #fitshdu_'+hdu.extnum+' {display: unset;}\n'
     }
     // color the first 8-char word
     document.querySelectorAll("li").forEach(x => (x.innerHTML = '<span>'+x.innerText.slice(0,8)+'</span>'+x.innerText.slice(8)))

@@ -69,13 +69,13 @@ function cards2hdr(cards) {
 }
 
 async function readfits(file) {
-    hdulist = {}
+    hdulist = []
     hdu = {extend: 0}
     var k = 0
     while (!hdu.last) {
-        hdulist[k] = hdu = await gethdr(file, hdu.extend)
-        if (hdu.extname) Object.defineProperty(hdulist, hdu.extname, {value: hdu})   // make non-enumberale to prevent duplicate for-in looping
-        k++
+        hdulist.push(hdu = await gethdr(file, hdu.extend))
+        hdu.extnum = k++
+        if (hdu.extname) hdulist[hdu.extname] = hdu   // not looped in for-of
     }
     return hdulist
 }
