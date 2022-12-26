@@ -103,7 +103,7 @@ async function fitsdata(hdulist, ext=0) {
         // fits bintable
         view = new DataView(buf, 0)
         rowsize = hdu.rowSize
-        d = {}
+        d = []
         for (col of hdu.cols) {
             getter = {"D": 'getFloat64', "1D": 'getFloat64',
                       "J": 'getInt32', "1L": 'getInt8'}[col.fmt]
@@ -111,7 +111,10 @@ async function fitsdata(hdulist, ext=0) {
             for (i=col.byteOffset; i<hdu.datasize; i+=rowsize) {
                 dk.push(view[getter](i))
             }
-            d[col.name] = d[col.k] = dk
+            dk.k = col.k
+            dk.name = col.name
+            d.push(dk)
+            d[col.name] = dk
         }
         d.dim = hdu.dim
     } else {
