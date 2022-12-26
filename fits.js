@@ -105,7 +105,8 @@ async function fitsdata(hdulist, ext=0) {
         rowsize = hdu.rowSize
         d = {}
         for (col of hdu.cols) {
-            getter = {"double": 'getFloat64', "byte": 'getInt8'}[col.fmt]
+            getter = {"D": 'getFloat64', "1D": 'getFloat64',
+                      "J": 'getInt32', "1L": 'getInt8'}[col.fmt]
             dk = []
             for (i=col.byteOffset; i<hdu.datasize; i+=rowsize) {
                 dk.push(view[getter](i))
