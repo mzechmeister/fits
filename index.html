@@ -136,13 +136,13 @@ details {
 <a href="https://github.com/mzechmeister/fits"><i class="fab fa-github"></i></a> <a href="" id ="share"><i class="fa fa-share-alt" draggable="true"></i></a><br>
 <label>url:</label> <input type="url" id="url" class="input" value="a.fits" onkeyup="if (event.key === 'Enter') doit(this.value)"><input type="submit" value="Load" onclick="doit(url.value)">
 
-<div id="fileinfo"></div>
+<br><span id="fileinfo"></span> <span id="info"></span><br>
 <div id="hduinfo"></div>
 <div class="resizeable_iframe" style="height: 400px">
 <iframe id="fitsgraph" width="100%" height="100%" style="resize: both;"></iframe>
 </div>
 
-<span id="info"></span><br>
+<span id="displayinfo"></span><br>
 colfunc: <input id="func" placeholder="x">
 <label>color map:</label> <select id="colormap" onchange="display(d)">
 <option>grey</option>
@@ -254,8 +254,8 @@ document.getElementById("share").onclick = function(e) {
     _url = new URL(window.location)
     _url = _url.origin + _url.pathname
     args = [url, func, zoom, colormap].filter(x => x.value).map(x => x.id+"="+x.value)
-    ext = document.querySelector("[id^=tab_]:checked")
-    if (ext) args.push("ext="+ext.id.slice(4))
+    //ext = document.querySelector("[id^=tab_]:checked")
+    //if (ext) args.push("ext="+ext.id.slice(4))
     if (d) args.push("disp="+d.ext)
     var link = document.createElement("a")
     link.href = _url + "?" + args.join("&")
@@ -299,7 +299,7 @@ fitsdisplay.onclick = e => {
 
 fitsdisplay.onmousemove = e => {
     p = getMousePos(e);
-    info.innerHTML = " x: "+p.i.toFixed(3)+" y: "+p.j.toFixed(3) +" value: "+ z(p.i,p.j)+ " color: "+ _func(z(p.i,p.j)).toFixed(6)
+    displayinfo.innerHTML = " x: "+p.i.toFixed(3)+" y: "+p.j.toFixed(3) +" value: "+ z(p.i,p.j)+ " color: "+ _func(z(p.i,p.j)).toFixed(6)
 }
 
 func.onchange = e => {display(d)}
