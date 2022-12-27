@@ -104,6 +104,28 @@ details {
   padding: 0px 1ch;
 }
 
+.loading::before {
+  content: 'Reading ';
+}
+.loading {
+  color: blue;
+}
+
+.loading::after {
+  animation: dotty 1s steps(1) infinite;
+  content: ' ...';
+}
+
+@keyframes dotty {
+  0%   { content: ''; }
+  25%  { content: ' .'; }
+  50%  { content: ' ..'; }
+  75%  { content: ' ...'; }
+}
+
+.error {
+  color: red;
+}
 </style>
 
 </head>
@@ -114,6 +136,7 @@ details {
 <a href="https://github.com/mzechmeister/fits"><i class="fab fa-github"></i></a> <a href="" id ="share"><i class="fa fa-share-alt" draggable="true"></i></a><br>
 <label>url:</label> <input type="url" id="url" class="input" value="a.fits" onkeyup="if (event.key === 'Enter') doit(this.value)"><input type="submit" value="Load" onclick="doit(url.value)">
 
+<div id="fileinfo"></div>
 <div id="hduinfo"></div>
 <div class="resizeable_iframe" style="height: 400px">
 <iframe id="fitsgraph" width="100%" height="100%" style="resize: both;"></iframe>
@@ -144,10 +167,21 @@ function fitsplot(ext=0) {
 }
 
 async function doit(filename) {
-    hdulist = await readfits(filename)
+    fileinfo.innerHTML = filename
+    fileinfo.className = 'loading'
+    try {
+       hdulist = await readfits(filename)
+    } catch(e) {
+       fileinfo.className = 'error'
+       fileinfo.innerHTML = 'Error: Could not read ' + filename
+       console.log(e)
+       return
+    }
     obj = hdulist[0].hdr['OBJECT']
     hduinfo.onclick = e => e.target.className!="colname"   // ignore colnames in clicks
-    hduinfo.innerHTML = hdulist[0].file + (obj? ' ['+obj+']': '')
+    fileinfo.innerHTML = hdulist[0].file + (obj? ' ['+obj+']': '')
+    fileinfo.className = ''
+    hduinfo.innerHTML = ''
     for (hdu of hdulist) {
         // make hduinfo
         k = hdu.extnum
