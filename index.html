@@ -6,6 +6,10 @@
 <script src='fits.js'></script>
 
 <style>
+body {
+  font-size: smaller;
+}
+
 ol {
   width: 80ch;
   font-family: monospace;
@@ -44,13 +48,15 @@ li::marker {
   float: right;
 }
 
-.fa-bars {
-  rotate: 90deg;
+#hduinfo i {
+  width: 16px;
+  padding: 0;
 }
 
 [class*=" fa-"] {
   color: black;
   padding: 0px 4px;
+  text-align: center;
 }
 
 #func::placeholder {
@@ -88,9 +94,16 @@ li::marker {
   border: none;
 }
 
-</style>
-<style>
-/* dynamically filled via js */
+details {
+  clear: both;  // float button the very end in every row
+}
+
+#hduinfo button {
+  float: right;
+  font-size: smaller;
+  padding: 0px 1ch;
+}
+
 </style>
 
 </head>
@@ -138,13 +151,18 @@ async function doit(filename) {
     for (hdu of hdulist) {
         // make hduinfo
         k = hdu.extnum
-        var extname = hdu.hdr["EXTNAME"] || ''
-        extname &&= ' ['+extname.trim()+']'
-        var but = hdu.dim.length ? ' <button onclick="hdulist['+k+'].cols? fitsplot('+k+') : show('+k+'); return false">'+ (hdu.cols?'<i class="fas fa-bars"></i>':'<i class="fas fa-image"></i>') + hdu.dim.join('<span style="padding: 1px;">&times;</span>') + '</button>' : ''
+        var extname = hdu.hdr["EXTNAME"] || '<i style="color: grey">PrimaryHDU</i>'
+        extname = extname.trim()
+        var icon = hdu.cols ? "fas fa-list" : hdu.dim.length ? "fas fa-image" : "far fa-square"
+        icon = `<i class="${icon}"></i>`
+        var dim = hdu.dim.join('<span style="padding: 1px;">&times;</span>')
+        if (dim) dim = ", " + dim
+        var but = hdu.cols ? ['fitsplot('+k+')', 'plot'] : hdu.dim.length ? ['show('+k+')', 'display'] : ''
+        if (but) but = ` <button onclick="${but[0]}; return false">${but[1]}</button>`
         var colnames = ''
         if (hdu.cols) for (col of hdu.cols) colnames += ' <span class="colname">'+col.name+'</span>'
-
-        hduinfo.innerHTML += '<details><summary>'+k+extname+':'+ but + colnames + '</summary>' +
+        var summary = `${icon} ${k} [${extname}${dim}] ${colnames} ${but}`
+        hduinfo.innerHTML += '<details><summary>'+ summary + '</summary>' +
             ' <ol><li>'+hdu.cards.join("\n<li>")+'</ol>' +
             '</details>'
     }
