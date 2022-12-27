@@ -1,0 +1,1511 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+    <title>csv plotter</title>
+
+    <style type="text/css">
+    .invalid  {
+        box-shadow: 0 0 3px 1px #900 !important;   /* red */
+    }
+
+    .dropcell:empty:before {
+        content: attr(placeholder);
+        color: #ccc;
+        cursor: text;
+    }
+
+    input, .dropcell {
+        font-family: Tahoma;
+        font-size: 13px;
+        padding: 2px;
+    }
+
+    .dropparent {
+        min-width: 40px;
+        display: flex;
+        flex-grow: 1;
+        border-bottom: #ccc 1px solid;
+        box-shadow: #ddd -1em 0px 1em -1em inset;   /* greying out rightwards */
+    }
+
+    .dropcell, div.func {
+        min-height: 20px;
+        min-width: 40px;
+        flex-grow: 1;
+        padding: 4px 1px;
+        overflow: hidden;   /* case no wrap */
+        text-indent: 15px;
+    }
+
+    .dragging.dropcell, .dragging .dropcell, span.caretover,  div.func:focus-within  {
+        box-shadow: 0 0 3px 1px #090;  /* green */
+    }
+
+    #kpool .kbox[knum], suggest_list .kbox[knum], .fancy .kbox[knum] {
+        border: 1px solid #0002;       /* grey ~ #ccc */
+        background-color: #e8f9ffaa;   /* a light blue */
+        text-indent: 0px;
+        display: inline-block;
+        padding: 0px 4px;
+    }
+
+    #kpool .kbox[kname]::before, suggest_list .kbox[kname]::before, .fancy .kbox[kname]::before {
+        content: attr(knum);
+        vertical-align: super;
+        font-size: smaller;
+        color: grey;
+    }
+
+    .kbox > span {
+        pointer-events: none;       /* pass all events to kbox */
+    }
+
+    #kpool > .kbox {
+        cursor: pointer;            /* sent by click */
+        margin: 3px;
+    }
+
+    .dropcell > .kbox::before {
+        cursor: grab;               /* draggable */
+    }
+
+    .kbox:active {
+        opacity: 0.4;
+    }
+
+    .kbox:not([knum]) {
+        text-decoration: underline wavy red;
+    }
+
+    .delicon {
+        opacity: 0;
+        width: 0;
+        position: relative;
+        display: inline-block;
+        text-indent: 0;
+        top: -0.8em;
+        z-index: 999;
+    }
+
+    .kbox:hover .delicon {
+        opacity: 1;   /* instead visibility, which does not work with position:absolute */
+    }
+
+    .delicon:before {
+        background: white;
+        pointer-events: all;
+    }
+
+    .delicon:not(:hover) {
+        color: #ccc;
+    }
+
+    .dropcell .kbox.dragover {
+         border: 1px dashed #090;       /* grey ~ #ccc */
+    }
+
+    .dragging .delicon {   /* prevent dashed kbox border when dragging over invisible delicon  */
+        display: none;
+    }
+
+    li {
+        display: block;
+        padding: 0 2px;
+        text-indent: initial;   /* do not inherit fom div */
+    }
+
+    li > .kbox {
+        border: none                     !important; /* ignore fancy*/
+        background-color: transparent    !important;
+        pointer-events: none;
+    }
+
+    li.hover {
+        background: lightblue;
+    }
+
+    li:not(.show) {
+        display: none;
+    }
+
+    #kpool > .kbox > span, li > .kbox > span {
+        font-size: 0;   /* hide the dollar */
+    }
+
+    span.dropcell.color {
+        width: 25px;
+        flex-grow: 0;
+    }
+
+    span.dropcell.opacity {
+        width: 15px;
+        flex-grow: 0;
+    }
+
+    .wrap span.dropcell.opacity, .wrap span.dropcell.color {
+        flex-grow: 1;
+    }
+
+    .dropcell.rgb:not(:hover):not(.caretover) {
+        /* slowly hide hex string */
+        transition: color 1s;
+        color: transparent;
+    }
+
+    .Trace {
+        border: 1px solid #ccc;
+        border-bottom: none;
+        display: flex;
+    }
+
+    .Trace:focus, .Trace:focus-within, .Trace.caretover {
+        border-color: #6399cb;
+    }
+
+    .dropparent > label {
+        font-weight: bold;
+        font-style:  italic;
+        color: #ccc;
+    }
+
+    .Trace:focus > label, .Trace:focus-within > label, .Trace.caretover > span > label {
+        color: #6399cb;
+    }
+
+    .Trace label > i, label > label {
+        position: absolute;
+    }
+
+    .wrap .Trace {
+        flex-flow: wrap row
+    }
+
+    .wrap .Trace .dropcell, .wrap .Trace div.func  {
+        min-width: 20px;
+    }
+
+    label > i {
+        padding: 2px 4px;
+    }
+
+    label > label {
+        padding: 0px 4px;
+    }
+
+    #colornames {
+        display: flex;
+        flex-wrap: nowrap;
+    }
+
+    #colornames > div {
+        min-width: 20px;
+        height: 20px;
+        margin: 2px;
+    }
+
+    #colornames > div:active {
+        opacity : 0.4;
+    }
+
+    /* fullscreen mode + uncomment height in plot_data*/
+    #plotly-div {
+        flex-grow: 20;
+    }
+
+    body {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .vis {
+        transition: opacity 0.2s;
+        border: none;
+        border-radius: 4px;
+        padding: 4px 6px;
+    }
+    .vis:not(:hover) {
+        opacity: 0.4;
+    }
+
+    :fullscreen .fa-expand {display: None}
+    html:not(:fullscreen) .fa-compress {display: None}
+
+    .dropcell > .active {
+        outline: 5px auto Highlight;
+        outline: 5px auto -webkit-focus-ring-color;
+        outline: 1px solid #000;
+        outline: 1px dashed #0008;  /* transparency to make cursor visible at border */
+    }
+
+    .plotypicon {
+        min-height: 20px;
+        border-bottom: #ccc 1px solid;
+    }
+
+    .plotypicon > img {
+        width: 18px;
+        height: 18px;
+        border: 1px solid grey;
+        margin: 0 0 0 4px;
+    }
+
+    #webgl:checked:not(:indeterminate) + i {
+        filter: blur(0.8px);
+    }
+
+    #webgl:indeterminate + i, #cbfancy:not(:checked) + i, #cbwrap:not(:checked) + i, #cblegend:not(:checked):not(:indeterminate) + i  {
+        color: #999;
+    }
+
+    #cblegend:indeterminate + i + .diagopac {
+        padding: 1px;
+        position: absolute;
+        left: 0px;
+        top: 0px;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(to right bottom, #f000 50%, #fffc 50%);
+    }
+
+    #menuicons > button,i {
+        vertical-align: middle;
+    }
+
+    .fa-classes, .fa-github {
+        font-size: large
+    }
+
+    .fa-border-style {
+        font-size: larger
+    }
+
+    .cboutline {
+        shape-rendering: crispEdges
+    }
+
+    .fa-x::before {
+        content: "x";
+        font-family: verdana;
+        font-style: italic;
+        font-weight: bold;
+    }
+
+    .fa-y::before {
+        content: "y";
+        font-family: verdana;
+        font-style: italic;
+        font-weight: bold;
+    }
+
+    #cursor {
+        display: inline;
+    }
+
+    #cursor.collapsed {
+        vertical-align: bottom; /* makes cursor inline not super in empty dropcell */
+        animation: blink 1s;
+        outline: 1px solid red;
+        animation-iteration-count: infinite;
+    }
+
+    #suggest_div #cursor {
+        display: none;
+    }
+
+    @keyframes blink {
+        50% { outline-color: #ffffff00; }
+    }
+
+    </style>
+</head>
+
+<body style="font-family: verdana; font-size: 70%; margin: 0">
+
+<div style="position: fixed; left: 20px; top: 10px; z-index: 10000">
+   <button id="fullscreen" class="vis" onclick="if (document.fullscreenElement) {(document.exitFullscreen || document.webkitExitFullscreen).call(document)}
+   else {var elem = document.documentElement; (elem.requestFullscreen || elem.webkitRequestFullscreen).call(elem)}"><i class="fas fa-expand"></i><i class="fas fa-compress"></i></button>
+   <button id="expand" class="vis" onclick="[document.getElementsByTagName('body')[0].style.height, graph.style.height] = this.firstChild.classList.toggle('fas') ?  ['','100vh'] : ['100vh', ''];"><i class="far fa-keyboard"></i></button>
+</div>
+
+<div id="plotly-div" oncontextmenu="return false"></div>
+<div style="display: flex; align-items: start;"><i class="fa fa-info" style="padding: 0px 5px;"></i>
+    <div id="info" style="flex-grow: 1"><span style="color:grey"></span></div>
+    <div id="menuicons" style="white-space: nowrap;">
+    <button onclick="select_columns()" title="replot"><i class="fas fa-sync"></i></button>
+    <button onclick="ta.focus(); document.execCommand('undo', false, null)" title="undo"><i class="fas fa-undo"></i></button>
+    <button onclick="ta.focus(); document.execCommand('redo', false, null)" title="redo"><i class="fas fa-redo"></i></button>
+    <button class="mobile" onmousedown="event.preventDefault()" onclick="sel.modify('move', 'backward', 'character')" style="width:100px"><i class="fas fa-arrow-left"></i></button>
+    <button class="mobile" onmousedown="event.preventDefault()" onclick="sel.modify('move', 'forward', 'character')" style="width:100px"><i class="fas fa-arrow-right"></i></button>
+    <button id="share" title="create link"><i class="fa fa-share-alt"></i></button>
+    <a id="github" title="github" style="text-decoration: none; color: black; padding: 0px 4px;" href="https://github.com/mzechmeister/csvplotter"><i class="fab fa-github"></i></a>
+    <label title="toggle svg/webgl"><input id="webgl" type="checkbox"  onclick="toggle_tristate(this)" onchange="select_columns()" style="display: None">
+    <i class="fas fa-glasses"></i></label>
+    <label title="frame for column name"><input id="cbfancy" type="checkbox" checked onchange='document.getElementById("Traces").classList.toggle("fancy", this.checked)' style="display: None;">
+    <i class="far fa-square"></i></label>
+    <label title="toggle legend" style="position:relative"><input id="cblegend" type="checkbox" onclick='toggle_tristate(cblegend); Plotly.relayout(graph, {showlegend: [null, false, true][this.state]})' style="display: None">
+    <i class="fas fa-list-ul" style="padding: 0 8px 0 4px;"></i><i class="diagopac" style="padding: 0px"></i></label>
+    </div>
+</div>
+
+
+<div>
+    <label title="wrap"><input id="cbwrap" type="checkbox" checked onchange='document.getElementById("Traces").classList.toggle("wrap", this.checked)' style="display: None;">
+    <i class="fas fa-stream"></i></label>
+    <div id="colornames" style="height:20px; float:right"></div>
+</div>
+
+
+<div id="cursor"></div>
+
+<div id="tawrapper" style="position: relative">
+<div id="Traces" class="fancy wrap" style="background: white; margin: 5px 0;">
+   <div class="Trace" contenteditable tnum=1>
+      <span class="plotypicon"><image src="https://raw.githubusercontent.com/plotly/plotly-icons/master/src/svg/plot-scatter.svg"></span>
+      <span class="dropparent"><label><i class="far fa-file" title="file/url"></i></label><span id="url" class="dropcell"><label for="csvFileInput" style="display: inline-block; text-align: left; border: 1px solid #ccc"></label>
+      <input id="csvFileInput" type="file" style="display:none" onchange="this.previousElementSibling.textContent = this.previousElementSibling.title = this.files[0].name; dsv(this.files[0], plot_data)" placeholder="Choose file"></span></span>
+      <span class="dropparent"><label><label class="fa-x" title="x values"></label></label><span id="cx" class="dropcell" placeholder="x" onchange="select_columns()"></span></span>
+      <span class="dropparent"><label><label class="fa-y" title="y values"></label></label><span id="cy" class="dropcell" placeholder="y" onchange="select_columns()"></span></span>
+      <span class="dropparent"><label><i class="fa fa-arrows-alt-h" title="x errors"></i></label><span id="ce_x" class="dropcell" placeholder="err_x" onchange="select_columns()"></span></span>
+      <span class="dropparent"><label><i class="fa fa-arrows-alt-v" title="y errors"></i></label><span id="ce_y" class="dropcell" placeholder="err_y" onchange="select_columns()"></span></span>
+      <span class="dropparent"><label><i class="fa fa-tag" title="label"></i></label><span id="ct" class="dropcell" placeholder="label" onchange="select_columns()"></span></span>
+      <span class="dropparent"><label><i class="fa fa-bullseye" title="point size"></i></label><span id="cs" class="dropcell" placeholder="size" onchange="select_columns()"></span></span>
+      <span class="dropparent"><label><i class="fas fa-shapes" title="point type"></i></label><span id="pt" class="dropcell" placeholder="pt" onchange="select_columns()"></span></span>
+      <span class="dropparent"><label><i class="fa fa-tint" title="color"></i></label><span id="cc" class="dropcell color" placeholder="color" onchange="select_columns()"></span></span>
+      <span class="dropparent"><label><i class="fa fa-adjust" title="opacity"></i></label><span id="co" class="dropcell opacity" placeholder="opac" onchange="select_columns()">0.5</span></span>
+   </div>
+   <div class="Trace" contenteditable tnum=2>
+      <span class="plotypicon"><image src="https://raw.githubusercontent.com/plotly/plotly-icons/master/src/svg/plot-line.svg" class="plotypicon"></span>
+      <span class="dropparent"><label><i class="fa fa-calculator" title="function"></i></label><span id="funcf" class="dropcell func" onchange="empty_func(); draw_func()" placeholder="[::] f(x)  or  x(t), y(t)"></span></span>
+      <span class="dropparent"><label><i class="fa fa-tint" title="color"></i></label><span type="search" id="funcc" class="dropcell color rgb" placeholder="color" onchange="empty_func(); draw_func()"></span></span>
+      <span class="dropparent"><label><i class="fa fa-adjust" title="opacity"></i></label><span id="funco" class="dropcell opacity" onchange="empty_func(); draw_func()">0.5</span></span>
+   </div>
+</div>
+<textarea id="ta" style="height: 0px; position: absolute; pointer-events: none; z-index: -1; top: 20px;"></textarea>
+</div>
+
+<div id="kpool"></div>
+
+<span id="suggest_div" contentEditable=False style="position: absolute; transform: translate(0%, -100%); max-height: 200px; overflow-y: auto; overflow-x: hidden; border: 1px solid #ccc"><ul id="suggest_list" style="padding: 0; margin: 0; width: 100%; background: #fffc;"></ul></span>
+
+
+<script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
+<script src='dsv.js'></script>
+<script src='zoom_pan.js'></script>
+<script src="https://unpkg.com/mathjs/lib/browser/math.js"></script>
+
+<script>
+tristate(cblegend, 0)
+
+function tristate(cb, state) {
+    cb.state = state
+    cb.indeterminate = state == 0
+    cb.checked = state == 2
+}
+
+function toggle_tristate(cb) {
+    tristate(cb, ++cb.state % 3)   // cycle through 0,1,2
+}
+
+if (!/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+    // hide arrow keys
+    for (x of [...document.getElementsByClassName('mobile')])
+        x.style.setProperty('display', 'none')
+}
+
+function info(...args) {
+    document.getElementById("info").innerHTML = args.join(" ")
+}
+
+function dragicon(ev) {
+    event.dataTransfer.setData("text", "asdf"+ev.target.innerText)
+}
+
+for (item of document.getElementsByClassName('fa')) {
+    item.draggable = "true"
+    item.ondragstart = dragicon
+}
+
+function add_drop(query) {
+    document.querySelectorAll(query).forEach(x => x.classList.add('dragging'))
+}
+
+function remove_drag() {
+    for (x of [...document.querySelectorAll(".dragging,.dragover")])
+        x.classList.remove('dragging', 'dragover')   /* see 1156633d47d2568781cabc5ebc7c07ad16f6089b */
+    return false   // do only once for mousedown, dragend
+}
+
+function colorDragStart(e) {
+    add_drop(".color")
+    e.dataTransfer.effectAllowed = 'move'
+    e.dataTransfer.setData("text", rgb)
+    e.dataTransfer.setData('text/rgb', rgb)
+}
+
+dropOnColorCell = e => {
+    rgb = e.dataTransfer.getData('text/rgb')
+    if (rgb) {
+        // select the whole color cell
+        prev_sel = getNodePos(e.target)
+        taInsert(rgb, prev_sel[0], prev_sel[1]-1)
+        colorRestyle(e.target)
+        e.preventDefault()
+        e.stopPropagation()
+    }
+}
+
+function renderColor(f) {
+    rgb = f.innerText.replace("\n", "")
+    if (rgb.startsWith('#')) {
+        f.style.backgroundColor = rgb
+        f.classList.add("rgb")
+    } else {
+        // vector, i.e. a palette
+        f.style.backgroundColor = ''
+        f.classList.remove("rgb")
+    }
+}
+
+function parseColor(f) {
+    rgb = f.innerText.replace("\n", "")
+    // single rgb string or vector, i.e. a palette
+    return rgb.startsWith('#')? rgb : parseCell(f)
+}
+
+function update_errorbar(tnum=1) {
+    // back to d3, since Plotly cannot make variable colors for errorbars
+    // also opacity for errorbars was depreciated
+    if (!webgl.indeterminate && webgl.checked) return   // does not works for gl (only svg)
+    let f = document.getElementsByClassName("color")[tnum-1]
+    let rgb = parseColor(f)
+    let opacity = parseCell(f.parentNode.nextElementSibling.lastChild)
+
+    let tclass = ".trace" + graph._fullLayout._traceUids[tnum-1]   // "trace1af3d7"
+    let xerr = Plotly.d3.selectAll('.xerror')
+    let yerr = Plotly.d3.selectAll('.yerror')
+    if (rgb.pop) {
+        // get colors from data points
+        rgbs = Plotly.d3.selectAll('.points .point').data().map(d => d.mcc)
+
+        // apply colors to errorbars
+        xerr.style('stroke', (d,i) => rgbs[i])
+        yerr.style('stroke', (d,i) => rgbs[i])
+    }
+    if (opacity.pop) {
+        xerr.style("stroke-opacity", (d,i) => opacity[i])
+        yerr.style("stroke-opacity", (d,i) => opacity[i])
+    } else   // also fixed opacity needs to be updated, since deprecated in plotly
+        Plotly.d3.selectAll(tclass+" .xerror,.yerror").style("stroke-opacity", opacity)
+}
+
+function colorRestyle(f) {
+    rgb = parseColor(f)
+    //let opacity = parseCell(f.nextElementSibling.nextElementSibling)
+    if (rgb.pop) rgb = [rgb]   // plotly needs brackets when restyling https://community.plotly.com/t/plotly-restyle-acces-modify-trace-data/9233/2
+    let tnum = f.closest(".Trace").getAttribute("tnum")
+    Plotly.restyle(graph, {
+        'marker.color': rgb,
+        'error_x.color': rgb,
+        'error_y.color': rgb,
+        'marker.showscale': typeof rgb[0] == "object",
+        'marker.colorbar.title': cbtitle || document.getElementById("cc").innerText
+        }, tnum-1)
+}
+
+// the color boxes
+divcols = document.getElementById('colornames')
+divcols.onmouseenter = (_ => add_drop(".color"))
+divcols.onmouseleave = remove_drag
+
+for (color of Plotly.d3.scale.category10().range()) {
+    let div = document.createElement('div')
+    div.style['background-color'] = color
+    div.draggable = true
+    div.ondragstart = colorDragStart
+    div.ondragend = remove_drag
+    div.onmousedown = (_ => {add_drop(".color")
+        rgb = div.style["background-color"]
+        if (rgb.startsWith('rgb')) rgb = '#' + rgb.slice(4,-1).split(',').map(x => (+x).toString(16).padStart(2,0)).join('')
+    })
+    div.onmouseup = (e => {
+        // send color as click
+        f = closest(sel.focusNode, ".dropcell.color")
+            || closest(getPoint(sel.focusNode)[0], ".dropcell.color")
+        if (f) {
+            prev_sel = getNodePos(f)
+            taInsert(rgb, prev_sel[0], prev_sel[1]-1)
+            colorRestyle(f)}})
+    divcols.append(div)
+}
+
+for (cell of document.querySelectorAll('.Trace label,img')) {
+    cell.contentEditable = false
+}
+
+for (cell of document.getElementsByClassName('dropcell')) {
+    cell.contentEditable = true
+    cell.innerHTML += "<br>"   // allows to focus empty spans
+    cell.spellcheck = false
+    cell.ondragover = handleDragEnter
+}
+
+for (cell of document.getElementsByClassName('color')) {
+    cell.ondrop = dropOnColorCell
+}
+
+dragsrc = null
+dragposA = null
+dragposB = null
+
+function handleDragStart(e) {
+    add_drop("[tnum='1']")
+    e.dataTransfer.setData('text/plain', this.innerText)
+    if (Traces.contains(e.target))
+        [dragposA, dragposB] = getNodePos(e.target)
+    dragsrc = e.target
+    // Trace.ondragstart adds deleteByDrag flag
+}
+
+function handleDragEnter(e) {
+    e.preventDefault()   // needed otherwise drop is not called
+    e.dataTransfer.dropEffect = (dragsrc && dragsrc.contains(e.target)) ? 'none' : 'move'   // rgb has no dragsrc
+}
+
+function handleDrag(e) {
+    e.preventDefault()   // needed otherwise drop is not called
+}
+
+
+// https://github.com/d3/d3-scale-chromatic
+schemeTableau10 = "4e79a7f28e2ce1575976b7b259a14fedc949af7aa1ff9da79c755fbab0ab".match(/.{1,6}/g)
+schemeSet3 = "8dd3c7ffffb3bebadafb807280b1d3fdb462b3de69fccde5d9d9d9bc80bdccebc5ffed6f".match(/.{1,6}/g)
+schemeDark2 = "1b9e77d95f027570b3e7298a66a61ee6ab02a6761d666666".match(/.{1,6}/g)
+
+function kBox(colname, responsive=true, drag4contenteditable=true) {
+    let sp = document.createElement('span')
+    sp.className = "kbox"
+    sp.innerHTML = '<span>$</span>' + colname
+    sp.innerHTML += "<span class='delicon far fa-times-circle' onclick='taDeleteNode(this.parentNode)'></span>"
+    knum = lookup["$"+colname]
+    if (knum != undefined) {
+        colname != knum && sp.setAttribute('kname', 'true')
+        sp.setAttribute('knum', knum)
+        //sp.style.color = "#" + schemeSet3[knum % 12]
+        sp.style.color = "#" + schemeDark2[knum % 8]
+    }
+    if (responsive) {
+        sp.draggable = true
+        sp.addEventListener('dragstart', handleDragStart)
+        sp.addEventListener('drag', handleDrag)
+        sp.addEventListener('dragenter', e => {e.currentTarget.classList.add("dragover")})
+        sp.addEventListener('dragleave', e => {if (sp.contains(e.relatedTarget)) return;   // @FF: do not leave when draging over the child textnode.  CSS ".kbox * {pointer-events: none;}"
+                                               e.currentTarget.classList.remove("dragover")})
+        sp.addEventListener('dragend', remove_drag)
+        if (drag4contenteditable) {
+            sp.addEventListener('drop', dropOnkbox)
+            sp.addEventListener('drag', e => {sp.contentEditable = true})
+            sp.addEventListener('mousedown', e => {sp.contentEditable = false})
+            sp.addEventListener('mouseup', e => {
+                sp.contentEditable = true
+                if (document.caretRangeFromPoint) {
+                    pos = document.caretRangeFromPoint(e.clientX, e.clientY)
+                    sel.setPosition(pos.startContainer, pos.startOffset)
+                } else {   // firefox
+                    sel.setPosition(e.rangeParent, e.rangeOffset)
+                }
+            })
+        }
+    }
+    return sp
+}
+
+dropOnkbox = e => {
+    e.preventDefault()   // no browser insertion
+    prev_sel = getNodePos(e.target)
+}
+
+kpoolClick = e => {
+    foc = getPoint(ta.selectionStart)[0]
+    if (document.querySelector('.Trace[tnum="1"]').contains(foc)) {
+        foc = closest(foc, '.kbox')
+        // cases: selection could be extended (dropcell focuses), a kbox, or collapsed
+        block = true
+        ta.focus()
+        if (foc && sel.isCollapsed)  // replace whole kbox
+            ta.setSelectionRange(...getNodePos(foc))
+        if (e.target.getAttribute("trash"))
+            document.execCommand('delete')
+        else
+            document.execCommand('insertText', false, e.target.innerText)
+        block = false
+    }
+}
+
+function init_box(colpool) {
+    var kpool  = document.getElementById('kpool')
+    kpool.innerHTML = '' // remove all currents options
+    trash = kBox('', true, drag4contenteditable=false)
+    trash.innerHTML = '<span style="font-size:inherit"><i class="far fa-trash-alt" style="vertical-align: baseline; font-size: 1.2em; padding: 0.09em 0 0.06em 0;"></i></span>'
+    trash.setAttribute('knum', "none")
+    trash.setAttribute('trash', "true")
+    trash.setAttribute('title', "delete active column")
+    trash.onclick = kpoolClick
+    kpool.append(trash)
+    suggest_list.innerHTML = ""   // clear it before loading dropped file
+
+    // put all columns into dragable divs
+    for (let [k, colname] of colpool.entries()) {
+        let sp = kBox(colname, true, drag4contenteditable=false)
+        sp.onclick = kpoolClick
+        kpool.appendChild(sp)
+
+        // list entries for suggestion
+        let li = document.createElement('li')
+        li.append(kBox(colname, responsive=false))
+        suggest_list.append(li)
+    }
+}
+
+function parseCell(cell) {
+    cellHTML = cell.innerHTML.replace(/<br>/g, "")
+    cellText = cell.innerText.replace(/\n/g, "")
+    if (cellHTML == +cellHTML) {
+        // scalar, e.g. "5"
+        result = cellText }
+    else if (cell.childElementCount && (cell.children[0].outerHTML == cellHTML) && data[cellText]) {
+        // single column
+        result = data[cellText]}
+    else {
+        // column operations
+        expr_raw = cellHTML
+        knums = new Set()
+        for (child of cell.children) {
+            knum = child.getAttribute('knum')
+            if (knum==null)
+                // normal string, e.g. "*8"
+                expr_raw = expr_raw.replace(child.outerHTML, child.innerText)
+            else {
+                expr_raw = expr_raw.replace(child.outerHTML, "$"+knum)
+                knums.add(knum)
+            }
+        }
+
+        // replaces entities ;gt&, ;amp& etc.
+        expr_raw = new DOMParser().parseFromString(expr_raw, "text/html").documentElement.textContent
+        expr_raw = expr_raw.replace(/\s/g, " ")   // replace protected spaces (caused by nbsp)
+
+        // search for column names starting with $ and ending as a word, e.g. $11 vs $119
+        for (k in lookup) {if (k.startsWith('$')) {  u=expr_raw.match("\\"+k+"\\b", "g"); u && knums.add(u[0].replace("$", ""))}}
+        // Trim dollar sign and convert to integer
+        //knums.add(...expr_raw.match(/\$[0-9]+/g).map(x=>+x.replace("$", "")))
+
+        // console.log(cell.id, expr_raw, knums)
+        try {
+            expr2 = math.compile(expr_raw).evaluate
+            vector = data[0].map((d,i) => {
+                argi = {}
+                for (k of knums) {
+                    d = data[k][i]
+                    argi["$"+k] = d=="undefined" || d===""? NaN : d  // NaNs for Mathjs
+                }
+                return expr2(argi)
+            })
+        }
+        catch (e) {
+            cell.classList.add("invalid")
+            info('<span style="color:#D00">'+cell.getAttribute('placeholder')+": "+e.message+'</span>')
+            return
+        }
+        result = vector
+    }
+    cell.classList.contains("invalid") && info()
+    cell.classList.remove("invalid")
+    return result
+}
+
+function using_columns() {
+    [cx, cy, ct] = document.getElementById("using").innerText.split(":")
+    document.getElementById("cx").innerText = cx
+    document.getElementById("cy").innerText = cy
+    document.getElementById("ct").innerText = ct
+    select_columns()
+}
+
+function select_columns() {
+    args = {
+        x : parseCell(document.getElementById("cx")),
+        y : parseCell(document.getElementById("cy")),
+        de_x : parseCell(document.getElementById("ce_x")),
+        de_y : parseCell(document.getElementById("ce_y")),
+        dt : parseCell(document.getElementById("ct")),
+        ds : parseCell(document.getElementById("cs")),
+        pt : parseCell(document.getElementById("pt")),
+        cc : parseColor(document.getElementById("cc")),
+        Do : parseCell(document.getElementById("co")),
+    }
+
+    //document.getElementById("using").innerText = x + ":" + y + ":" + ct + ":" + ds
+    plot_data(data, args)
+    return true
+}
+
+var fmtaxis = {
+    linecolor: 'black', mirror: true,
+    ticks: "inside", mirror: "allticks", zeroline: false
+}
+
+function linspace(start, stop, num, endpoint=true) {
+    const div = endpoint ? (num - 1) : num
+    const step = (stop - start) / div
+    return Array.from({length: num}, (_, i) => start + step * i)
+}
+
+function empty_func() {
+    // a placeholder (function with no data)
+    var graph = document.getElementsByClassName("js-plotly-plot")[0]
+    expr1 = document.getElementById("funcf").innerText.replace("\n", "")
+    if (expr1 == "") Plotly.restyle(graph, {'x':[[]], 'y':[[]]}, 1)
+}
+
+function draw_func() {
+    var graph = document.getElementsByClassName("js-plotly-plot")[0]
+    expr1 = document.getElementById("funcf").innerText.replace("\n", "")
+    funcc = document.getElementById("funcc").innerText.replace("\n", "")
+    funco = document.getElementById("funco").innerText.replace("\n", "")
+    if (expr1 != "") {
+        try {
+            /* expr = new Function("x", "return "+expr1) */
+            // mathjs
+            range = [...graph._fullLayout.xaxis.range, 2000]
+
+            // split range
+            user_range = expr1.match(/^\s*?\[(.*)\]/)
+            if (user_range) {
+                expr1 = expr1.replace(user_range[0], "")
+                user_range = user_range[1].split(":").map(s => s.trim())
+            }
+
+            [expr_y, expr_x] = expr1.split(",").reverse()
+            if (expr_x != undefined) {
+                // parametric plot
+                range = [0, 10, 2000]
+            }
+
+            if (user_range) {
+                if (user_range.length == 1 && user_range[0]) {
+                   range[2] = +user_range[0]
+                }
+                else if (user_range.length > 1) {
+                    if (user_range[0]) range[0] = +user_range[0]
+                    if (user_range[1]) range[1] = +user_range[1]
+                    if (user_range[2]) range[2] = +user_range[2]
+                }
+            }
+
+            x1 = t1 = linspace(...range)
+            expr2 = math.compile(expr_y.trim()).evaluate
+
+            if (expr_x != undefined) {
+                // parametric plot
+                expr_x2 = math.compile(expr_x.trim()).evaluate
+                x1 = t1.map(t => expr_x2({'t':t}))
+                expr = t => expr2({'t':t})
+                y1 = t1.map(expr)
+            } else {
+                if (graph._fullLayout.xaxis.type == 'log') x1 = x1.map(x => 10**x)
+                expr = x => expr2({'x':x})
+                y1 = x1.map(expr)
+            }
+        }
+        catch(e) {
+            info('<span style="color:#D00">expr: '+e.message+'</span>')
+            document.getElementById("funcf").classList.add("invalid")
+            return false
+        }
+        funcf.classList.contains("invalid") && info()
+        funcf.classList.remove("invalid")
+        Plotly.restyle(graph, {'x': [x1], 'y': [y1], 'name': [expr1],
+            marker: [{color: funcc}], opacity: funco}, 1)
+    }
+    for (x of document.querySelectorAll(".gtitle, .xtitle, .ytitle, .cbtitle > text")) {
+        // reset attributes for the editable labels
+        // needed only for the when page reload (work in first place) + mouse zoom (property removed)
+        x.style['cursor'] = 'text'
+        x.style['pointer-events'] = 'all'
+        x.onclick = edittext
+    }
+}
+
+glmin = 500   // Threshold for number of points to toggle automatically between gl and svg
+
+function plot_data(data, {x, y, de_x, de_y, dt, ct, ds, pt, cc, Do}) {
+    console.log('asdfas', dt, x, y)
+
+    trace1 = {
+        type: (webgl.indeterminate ? data[0].length>glmin : webgl.checked) ? "scattergl" : "scatter",   // https://plotly.com/javascript/webgl-vs-svg
+        x: x,
+        y: y,
+        name: data._basename,
+        mode: 'markers',
+        marker: {
+            symbol: pt,
+            opacity: Do,
+            color: cc ? cc : '#404040',
+            colorscale: 'Portland',
+            colorbar: {title: cbtitle || document.getElementById("cc").innerText,
+                ticks: 'inside'
+            },
+            showscale: typeof cc == "object",
+            line: { width: 1,
+                color: '#404040'}}
+    }
+    if (dt) trace1.text = dt   //.map(ti => ""+ct+": "+ti)
+    if (ds) trace1.marker.size = ds
+    if (de_x) trace1.error_x = {array: de_x, color: cc ? cc : '#404040', opacity: Do, width: 2, thickness: 1.5}
+    if (de_y) trace1.error_y = {array: de_y, color: cc ? cc : '#404040', opacity: Do, width: 2, thickness: 1.5}
+    cx = document.getElementById("cx").innerText
+    cy = document.getElementById("cy").innerText
+
+    traces = [trace1]
+
+    trace2 = {
+        type: "line",
+        x: [],
+        y: [],
+    }
+
+    traces.push(trace2)
+
+    layout = {
+        autosize: true,
+        // height: 394,
+        // width: 1121,
+        hovermode: 'closest',
+        title: title || "csv plotter",
+        xaxis: {
+            title: xtitle || (cx>-1 ? 'Column '+cx : cx),
+            ...fmtaxis
+        },
+        yaxis: {
+            //title: 'Column y',
+            title: ytitle || (cy>-1 ? 'Column '+cy : cy),
+            ...fmtaxis
+        },
+        margin: {l: 50, r: 10, b: 40, t: 30},
+        showlegend: [null, false, true][cblegend.state]
+    }
+    // Plotly.plot('plotly-div', {
+    Plotly.newPlot('plotly-div', {
+        data: traces,
+        layout: layout,
+        config: {responsive: true,
+            scrollZoom: true,
+            displaylogo: false,
+            modeBarButtonsToRemove: ['select2d', 'lasso2d']}
+    })
+
+    graph = document.getElementsByClassName("js-plotly-plot")[0]
+
+    graph.on('plotly_restyle', e => update_errorbar())
+
+    graph.on('plotly_relayout', function(event) {
+        // recompute the function for new ranges after zoom (resize?)
+        draw_func()
+        update_errorbar()
+    })
+
+    draw_func()
+    update_errorbar()   // to render ealier the errorbars
+    zoompan()
+
+    graph.on('plotly_click', function(data) {
+        let pts = ''
+        for (let d of data.points) { // data.point are not all points from one trace
+            pts = "#" + (d.pointNumber+1) + ":  x = " + d.x + ", y = " + d.y
+            d['error_x.array'] === undefined || (pts += ", e_x = " + d['error_x.array'])
+            d['error_y.array'] === undefined || (pts += ", e_y = " + d['error_y.array'])
+            d.text === undefined || (pts += ', ' + d.text)
+            d['marker.size'] === undefined || (pts += ", ps = " + d['marker.size'])
+            d['marker.symbol'] === undefined || (pts += ", pt = " + d['marker.symbol'])
+        }
+        info('Closest point clicked: ' + pts)
+    })
+}
+
+
+gwidth = null
+gheight = null
+let observer = new MutationObserver(function(mutations) {
+    var graph = document.getElementById("plotly-div")
+    var resized = graph.style.width && graph.style.height && (gwidth != graph.style.width) || (gheight != graph.style.height)
+    gwidth = graph.style.width
+    gheight = graph.style.height
+    if (resized) {
+        window.dispatchEvent(new Event('resize'))
+    }
+})
+
+observer.observe(document.getElementById('plotly-div'), {attributes: true})
+
+
+// allow to pre-fill fields and url
+url_kwargs = Object.fromEntries(new URL(window.location).searchParams)
+url = url_kwargs["url"]
+
+
+function renderCell(node) {
+    keys = [...colnames, "0", ...colnames.map((x,i) => ""+(i+1))].sort().reverse()
+
+    nodenum = [...dropcells].indexOf(node)
+    nodetext = ta.value.split("\n")[nodenum]
+    nodetext = nodetext.replace(/  /g, ' \xa0').replace(/ $/, '\xa0')
+    nodestart = getPos(node, 0)
+
+    curpos = ta.selectionEnd - nodestart
+    seltext = nodetext
+    if (0 < curpos && curpos < nodetext.length)
+        seltext = nodetext.slice(0, curpos)
+
+    let toparse = nodetext.replace("\n", "").split("$")
+    node.innerHTML = toparse.shift()   // Consume the first text. It's "", when string starts with "$".
+
+    let curnode = node.firstChild   // a text node
+    let qname = ''
+    for (let text of toparse) {
+        let kname = text
+        let hit = keys.find(k => text.startsWith(k))
+        if (hit)
+            kname = hit
+        else {
+            querylen = curpos - node.innerText.length - 1
+            if (querylen <= text.length)
+                // knode will be a kBox without knum and is rendered differently (wavy underline)
+                kname = qname = text.substring(0, querylen)
+        }
+        knode = kBox(kname)
+        if (node.innerText.length < curpos) curnode = knode.lastChild   // text node (not $)
+        node.append(knode)
+        text = text.substring(kname.length)   // split off kname
+        if (text != "") node.append(text)
+        if (node.innerText.length - text.length < curpos) curnode = node.lastChild
+    }
+
+    node.append(document.createElement("br"))
+
+    qname && filter_suggests(curnode.parentNode)
+
+    node.classList.contains("color") && renderColor(node)
+}
+
+function init() {
+    // after reading data:
+    colpool = arguments[0]._colnames
+
+    // render column names in plot fields
+    lookup = {"$0": 0}
+    // lookup has both column names and column number
+    // e.g. $4, "$colname" "colname" => 4
+    for ([i,k] of colpool.entries()) {lookup["$"+(i+1)] = lookup["$"+k] = lookup[k] = i+1}
+
+    init_box(colpool)
+
+    var fs = url_kwargs.expand
+    delete url_kwargs.expand
+    var gl = url_kwargs.gl
+    delete url_kwargs.gl
+    xtitle = url_kwargs.xtitle || ""
+    delete url_kwargs.xtitle
+    ytitle = url_kwargs.ytitle || ""
+    delete url_kwargs.ytitle
+    title = url_kwargs.title  || ""
+    delete url_kwargs.title
+    cbtitle = url_kwargs.cbtitle  || ""
+    delete url_kwargs.cbtitle
+
+    for (arg in url_kwargs) {
+        t = document.getElementById(arg)
+        t.innerHTML = url_kwargs[arg] + "<br>"
+    }
+
+    ta.value = [...dropcells].map(x => x.innerText).join("");
+    dropcells.forEach(renderCell)
+
+    state = ["true", "1"].includes(gl) ? 2 :
+            ["false", "0"].includes(gl) ? 1 : 0
+    tristate(webgl, state)
+
+    select_columns()   // plots data
+    if (fs != undefined) expand.click()
+}
+
+dsv(url, init) 
+
+
+// create shared link
+document.getElementById("share").onclick = function() {
+    _url = new URL(window.location)
+    _url = _url.origin + _url.pathname + "?"
+    _url += (xtitle && "xtitle="+xtitle+"&")
+         +  (ytitle && "ytitle="+ytitle+"&")
+         +  (title  && "title="+title+"&")
+         +  (cbtitle&& "cbtitle="+cbtitle+"&")
+    if (!webgl.indeterminate) _url += "gl="+webgl.checked+"&"
+    _url += [...dropcells].map(x => (val=x.innerText.replace("\n", "")) && x.id+'='+val).filter(x => x).join('&')
+    _url = _url.replace(/#/g, '%23').replace(/\+/g, '%2B')
+    var link = document.createElement("a")
+    link.href = _url
+    link.append(_url)
+    info(link.outerHTML)
+}
+
+
+function edittext(svgtext) {
+    // to edit xtitle etc.
+    svgtext = svgtext.target
+    var input = document.createElement("input")
+    input.value = svgtext.textContent
+    input.svg = svgtext
+    graph.onmouseover = null   // remove temporarily the focus stealing from zoompan.js
+
+    // input.onkeyup = function(e) {
+    input.addEventListener('keyup', function(e) {
+        //e.stopPropagation()
+        if (["Enter", "Escape"].includes(e.key)) {this.blur()}
+        else {svgtext.textContent = this.value}
+        return false
+    }, true)
+
+    input.onkeydown = function (e) {
+        // keyup+enter is not called?! thus keydown
+        if (["Enter"].includes(e.key)) {
+            if (this.svg.getAttribute('class') == "xtitle") xtitle = this.value
+            if (this.svg.getAttribute('class') == "ytitle") ytitle = this.value
+            if (this.svg.getAttribute('class') == "gtitle") title = this.value
+        }
+    }
+
+    input.onblur = function(e) {
+        //if (e.relatedTarget) {e.stopPropagation(); e.stopImmediatePropagation(); this.focus(); return}
+        myforeign.remove()
+        graph.onmouseover = graph.focus   // restore focus behaviour from zoompan.js
+    }
+
+    input.onchange = function (e) {
+        // update the titles in plotly
+        var val = e.target.parentNode.parentNode.classList.value
+        var a = {"g-xtitle" : 'xaxis.', "g-ytitle" : 'yaxis.', "g-gtitle":''}
+        if (val=="g-xtitle") xtitle && (xtitle=e.target.value)
+        if (val=="g-ytitle") ytitle && (ytitle=e.target.value)
+        if (val=="g-gtitle")  title && (title=e.target.value)
+        if (val=="cbtitle") {
+            myforeign.remove()
+            Plotly.restyle(graph, {"marker.colorbar.title": cbtitle=e.target.value})
+            return
+        }
+        a = a[val] + 'title'
+        b = {}; b[a] = e.target.value
+        Plotly.relayout(graph, b)
+        graph.onmouseover = graph.focus   // restore focus behaviour from zoompan.js, relayout removes the foreign object
+    }
+
+    var myforeign = document.createElementNS('http://www.w3.org/2000/svg', 'foreignObject')
+    myforeign.setAttribute("width", "100%")
+    myforeign.setAttribute("height", "100%")
+    myforeign.setAttribute("x", svgtext.attributes['x'].nodeValue)
+    myforeign.setAttribute("y", math.max(svgtext.attributes['y'].nodeValue-35, 10))
+    myforeign.append(input)
+
+    svg = svgtext.parentNode
+    svg.append(myforeign)
+    console.log(svg.children, svgtext.textContent)
+
+    input.focus()
+}
+
+window.onbeforeunload = function(e) {
+    // prevent following github link accidentally
+    if (e.srcElement.activeElement.id == 'github')
+        return 'Are you sure you want to leave?'
+}
+
+
+function suggest_hover_kdb(e) {
+    e.preventDefault()
+    hover = document.querySelector('.show.hover')
+    // find next proposal
+    if (hover) {
+        while (hover = hover[(e.key=="ArrowUp"? 'previous':'next') + 'ElementSibling']) {
+            if (hover.classList.contains('show')) break
+        }
+        if (!hover)  // stick to the element (first/last if not found)
+            return
+    }
+    old = document.querySelector('.hover')
+    old && old.classList.remove('hover')
+    hover && hover.classList.add('hover')
+    hover && hover.scrollIntoView({block: "nearest"})
+}
+
+function suggest_hover(e) {
+    // mouseover
+    old = document.querySelector('.hover')
+    old && old.classList.remove('hover')
+    e.target.classList.add('hover')
+}
+
+function filter_suggests(foc) {
+    foc.before(suggest_div)
+    let n = 0
+    let query = foc.innerText.toLowerCase().replace("$","")
+    for (let option of suggest_list.children) {
+        if (option.innerText.toLowerCase().match(query)
+            || option.firstChild.getAttribute("knum").match(query)) {
+            option.classList.add('show')
+            ++n
+        }
+        else option.classList.remove('show', 'hover')
+    }
+    // keep last proposal or propose first element
+    (hover = suggest_list.querySelector('.show.hover')) ||
+        (hover = suggest_list.querySelector('.show')) && hover.classList.add('hover')
+    if (!n) kpool.after(suggest_div)
+    // if there is only unique match, apply immediately
+    if (n==1 && (hover.firstChild.getAttribute("knum") == query
+                      || hover.innerText.toLowerCase() == query))
+        suggest_hit(hover)
+}
+
+function suggest_hit(e) {
+    hover = e.target || e
+    if (hover) {
+        hover = hover.firstChild
+        // get start of query kbox
+        pos = hover.parentNode.parentNode.parentNode.nextSibling.innerText.length
+        taInsert(hover.innerText, ta.selectionStart-pos, ta.selectionEnd)
+    }
+    e.preventDefault && e.preventDefault()  // do not insert newline
+    return // prevent caret movement
+}
+
+suggest_div = document.getElementById("suggest_div")
+suggest_list = document.getElementById("suggest_list")
+suggest_list.onmouseover = suggest_hover
+suggest_list.onmousedown = suggest_hit
+
+Traces = document.getElementById('Traces')
+dropcells = document.querySelectorAll('.dropcell')
+cursor = document.getElementById('cursor')
+prev_r = null   // previous range
+
+var sel = window.getSelection()
+
+function closest(elem, cls) {
+    if (!elem) return null
+    if (!elem.closest) elem = elem.parentNode
+    return elem.closest(cls)
+}
+
+function pseudoCursor() {
+    collapsed = ta.selectionStart == ta.selectionEnd
+    kpool.after(suggest_list)   // do not count the entries
+    pointA = getPoint(ta.selectionStart)
+    markCell(pointA[0])
+    cursor.classList.toggle('collapsed', collapsed)
+    if (collapsed) {
+        // indicate the ta position in editable div
+        let range = document.createRange()
+        range.setStart(...pointA)
+        range.insertNode(cursor)
+        pointA[0].parentNode.normalize()   // triggers again selection change, if new cursor after old cursor
+        ta.focus({preventScroll: true})    
+    } else if (!block) {
+        // hand over the ta selection to the editable div
+        point = getPoint(ta.selectionEnd)
+        if (ta.selectionDirection == "backward") sel.setBaseAndExtent(...point, ...pointA)
+        else sel.setBaseAndExtent(...pointA, ...point)
+    }
+    suggest_div.append(suggest_list)
+}
+
+function getPos(node, offset) {
+    lineno = [...dropcells].findIndex(x => x.contains(node))
+    if (lineno < 0) return 0
+    let range = document.createRange()
+    range.setStart(dropcells[lineno], 0)
+    range.setEnd(node, offset)
+    pos = [...ta.value.split("\n").slice(0, lineno), range.toString()].join("\n").length
+    return pos
+}
+
+function getNodePos(node) {
+    pos = getPos(node, 0)
+    return [pos, pos + node.innerText.length]
+}
+
+function getPoint(offset, pnode=null) {
+    if (!pnode) {
+        lineno = ta.value.substr(0, ta.selectionStart).split("\n").length
+        if (offset >= ta.textLength) {
+            // there is no dropcell after the last
+            offset -= 1
+            lineno -= 1
+        }
+        pnode = dropcells[lineno-1]
+        offset -= getPos(pnode, 0)
+    }
+
+    Traces.after(cursor)   // avoid miscounting with inline cursor, normalisation can be skipped
+    if (!offset) return [pnode, offset]
+    for (node of [...pnode.childNodes]) {
+        len = (node.nodeName == "BR") || (node.innerText == undefined ? node : node.innerText).length
+        if (offset <= len) break
+        offset -= len
+    }
+    if (node && node.innerText && node.innerText.length>1)
+        // get deeper to the textnode
+        return getPoint(offset, node)
+    return [node, offset]
+}
+
+function taInsert(text, start, end=null) {
+    if (end == null) end = start
+    block = true
+    ta.focus()
+    ta.setSelectionRange(start, end)
+    document.execCommand('insertText', false, text)
+    block = false
+}
+
+function taDelete(start, end) {
+    block = true
+    ta.focus()
+    ta.setSelectionRange(start, end)
+    document.execCommand('delete')
+    block = false
+}
+
+function taDeleteNode(node) {
+    del_sel = getNodePos(node)
+    taDelete(...del_sel)
+    return del_sel
+}
+
+ta.onblur = e => {
+    Traces.after(cursor)
+    kpool.after(suggest_div)
+    for (x of [...document.getElementsByClassName('caretover')])
+        x.classList.remove("caretover")
+}
+
+ta.onkeydown = e => {
+    if (e.key=="ArrowLeft" || e.key=="ArrowRight") {
+        kpool.after(suggest_div)
+    }
+
+    if (e.key=="ArrowDown" || e.key=="ArrowUp") {
+        Traces.contains(suggest_div) && suggest_hover_kdb(e)
+        return true
+    }
+
+    if (e.key == "Delete" && ta.value[ta.selectionEnd] == "\n")
+        e.preventDefault()
+    if (e.key == "Backspace" && ta.value[ta.selectionEnd-1] == "\n")
+        e.preventDefault()
+
+    if (e.ctrlKey && e.key == 'a') {
+        e.preventDefault()
+        // for ctrl+A select only the cell (textarea line, not the whole textarea)
+        ta.setSelectionRange(ta.value.lastIndexOf('\n', ta.selectionStart-1)+1, ta.value.indexOf('\n', ta.selectionStart))
+    }
+
+    if (e.key == "Enter") {
+        e.preventDefault()
+        // enter would destroy dropcell-lineno relation
+        // instead update the plot
+        if (Traces.contains(suggest_div) && (hit=document.querySelector('.show.hover')))
+            suggest_hit(hit)
+        else
+            select_columns()    // update plot
+    }
+}
+
+Traces.onkeydown = function(e) {
+     // the suggest list should visible
+     if (e.key == "Enter") {
+        e.preventDefault()
+        if (Traces.contains(suggest_div) && (hit=document.querySelector('.show.hover')))
+            suggest_hit(hit)
+    }
+}
+
+block = false
+
+function markCell(node) {
+    let foc_old = document.querySelector('.dropcell.caretover')
+    let foc = closest(node, ".dropcell")
+    // handle focus change and blur events
+    foc_old && foc_old.classList.remove('caretover')
+    foc_old && foc_old.classList.remove('caretover')
+    foc && foc.classList.add('caretover')
+    foc && foc.closest(".Trace").classList.add('caretover')
+}
+
+document.addEventListener("selectionchange", function(e) {
+    if (prev_r == sel.getRangeAt(0)) return   // the selection has not changed !
+    prev_r = sel.getRangeAt(0)                // firefox calls textarea focus twice, try https://jsfiddle.net/o7cm2810
+
+    cursor.classList.remove("collapsed")
+    markCell(null)
+
+    if (document.activeElement == ta) pseudoCursor()
+    else if (Traces.contains(document.activeElement)) {
+        kpool.after(suggest_div)
+        prev_sel = [getPos(sel.anchorNode, sel.anchorOffset), getPos(sel.focusNode, sel.focusOffset)]
+        if (prev_sel[0] > prev_sel[1])
+            prev_sel = prev_sel.reverse()
+        if (!block && prev_sel[1] == prev_sel[0]) {
+            ta.setSelectionRange(...prev_sel)
+            pseudoCursor()   // needed for normalise, will not give new ta selection
+        }
+    }
+})
+
+// Firefox ~68 + enable dom.select_events.textcontrols.enabled
+ta.addEventListener("selectionchange", function(e) {
+    pseudoCursor()
+    e.stopPropagation()
+})
+
+ta.oninput = e => {
+    lineno = ta.value.substr(0, ta.selectionStart).split("\n").length
+    node = dropcells[lineno-1]
+    renderCell(node)
+    if (e.inputType == 'deleteContentForward')
+        pseudoCursor()
+    // other keys call pseudoCursor via selectionchange
+    e.stopPropagation()
+
+    if (document.getElementById('funcf').contains(node))
+        // aggressive function update
+        document.getElementById('funcf').onchange()
+}
+
+Traces.onpaste = function (e) {
+    // console.log("redirect insertFromPaste to ta")
+    e.preventDefault()
+    edata = (e.clipboardData || window.clipboardData).getData('Text')
+    taInsert(edata, ...prev_sel)
+}
+
+Traces.ondragstart = function(e) {
+    // add a flag
+    if (dragposA == null)
+         [dragposA, dragposB] = prev_sel
+    // e.dataTransfer.setData('deleteByDrag', 'true')
+}
+
+prev_sel = [null, null]
+
+Traces.ondrop = function(e) {
+    // https://jsfiddle.net/eruyb96v (insert as text needed, not html)
+
+/* various cases to handle
+-----i----------  => -----i----------   oninput (simple insert)
+---DDiD---------  => ---i---------      insert  ("insertReplace")
+-----d----------  => -----CCC---------  dropInsert d  (content external)
+---DDdD---------  => ---CCC---------    dropInsert DDD (= "dropReplace")
+-----d-----CCC--  => -----CCC-------    deleteByDrag
+--d-DDD----CCC--  => --CCC-DDD------    deleteByDrag (Selection not hitted)
+---DDdD----CCC--  => ---CCC------       deleteByDrag + dropInsert DDD
+
+to check: drop is in prev_sel
+*/
+
+    e.preventDefault()
+    //e.preventDefault()   // stops the browser from redirecting FF68.
+    if (e.dataTransfer.files.length) {
+        url_kwargs["url"] = e.dataTransfer.files[0].name
+        dsv(e.dataTransfer.files[0], init)
+        return false
+    }
+       // kpool.kbox,text -> kbox
+       // kbox -> kbox
+       // kbox -> text
+       // kpool.kbox,text -> text
+
+    // redirect drop to ta
+
+    if (document.caretRangeFromPoint) {
+        range = document.caretRangeFromPoint(e.clientX, e.clientY)
+        droppos = getPos(range.startContainer, range.startOffset)
+        dropdiv = range.startContainer
+    } else {
+        droppos = getPos(e.rangeParent, e.rangeOffset)
+        dropdiv = e.rangeParent
+    }
+
+    if (prev_sel[0] > prev_sel[1])
+        prev_sel = prev_sel.reverse()
+
+    drop_sel = [droppos, droppos]
+    if ((prev_sel[0] < droppos && droppos < prev_sel[1])
+          || closest(e.target, ".kbox"))   // replace on hover kbox, droppos inclusive <= ... <=
+        drop_sel = prev_sel
+
+    edata = e.dataTransfer.getData('Text')
+    block = true
+    ta.focus()
+
+    if (dragposA != null) {
+        // deleteByDrag
+        ta.setSelectionRange(dragposA, dragposB)
+        document.execCommand('delete')
+        if (drop_sel[0] > dragposA) {
+            drop_sel[0] -= dragposB - dragposA
+            drop_sel[1] -= dragposB - dragposA
+        }
+    }
+
+    // insertFromDrop
+    ta.setSelectionRange(...drop_sel)
+    document.execCommand('insertText', false,  edata)
+
+    dragposA = null
+    block = false
+}
+
+Traces.oninput = function(e) {
+    console.log(e.inputType)
+    block = true
+    ta.focus()
+
+    if ("deleteByCut deleteByDrag deleteContentBackward deleteContentForward".includes(e.inputType)) {
+        ta.setSelectionRange(...prev_sel)
+        document.execCommand('delete')
+    }
+    if ("insertFromDrop insertFromPaste insertText".includes(e.inputType)) {
+        var text = e.data || (e.dataTransfer && e.dataTransfer.getData('Text')) || edata
+        edata = null
+        if ("insertFromPaste insertText".includes(e.inputType)) {
+            ta.setSelectionRange(...prev_sel)
+        }    // else insertFromDrop
+        document.execCommand('insertText', false, text)
+    }
+    block = false
+}
+
+</script>
+
+<div id="plottyp" bla='"https://github.com/plotly/plotly-icons/tree/master/src/svg https://plotly-icons.ineffable.digital/">
+   <image src="https://raw.githubusercontent.com/plotly/plotly-icons/master/src/svg/plot-scatter.svg" class="plotypicon">
+   <image src="https://raw.githubusercontent.com/plotly/plotly-icons/master/src/svg/plot-error-bars.svg" class="plotypicon">
+   <image src="https://raw.githubusercontent.com/plotly/plotly-icons/master/src/svg/plot-line.svg" class="plotypicon">
+   <image src="https://raw.githubusercontent.com/plotly/plotly-icons/master/src/svg/plot-histogram.svg" class="plotypicon"'>
+</div>
+
+
+</html>

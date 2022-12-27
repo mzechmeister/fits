@@ -4,6 +4,7 @@
 <title>fits reader</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 <script src='fits.js'></script>
+
 <style>
 ol {
   width: 80ch;
@@ -77,6 +78,16 @@ li::marker {
   padding: 0px 2px;
 }
 
+.resizeable_iframe {
+  resize: both;
+  overflow: hidden;
+  border: 1px green solid;
+}
+
+#fitsgraph {
+  border: none;
+}
+
 </style>
 <style>
 /* dynamically filled via js */
@@ -91,6 +102,9 @@ li::marker {
 <label>url:</label> <input type="url" id="url" class="input" value="a.fits" onkeyup="if (event.key === 'Enter') doit(this.value)"><input type="submit" value="Load" onclick="doit(url.value)">
 
 <div id="hduinfo"></div>
+<div class="resizeable_iframe" style="height: 400px">
+<iframe id="fitsgraph" width="100%" height="100%" style="resize: both;"></iframe>
+</div>
 
 <span id="info"></span><br>
 colfunc: <input id="func" placeholder="x">
@@ -111,6 +125,11 @@ zoom: <input id="zoomfac" style="width: 7ch" onchange="zoom.value=Math.log2(zoom
 
 <script>
 
+function fitsplot(ext=0) {
+    var url = hdulist[0].file + "[" + ext + "]"
+    fitsgraph.src = "csv_plotter.htm?url=" + url + "&cx=$0&cy=$1&title=" + obj
+}
+
 async function doit(filename) {
     hdulist = await readfits(filename)
     obj = hdulist[0].hdr['OBJECT']
@@ -121,7 +140,7 @@ async function doit(filename) {
         k = hdu.extnum
         var extname = hdu.hdr["EXTNAME"] || ''
         extname &&= ' ['+extname.trim()+']'
-        var but = hdu.dim.length ? ' <button onclick="show('+k+'); return false">'+ (hdu.cols?'<i class="fas fa-bars"></i>':'<i class="fas fa-image"></i>') + hdu.dim.join('<span style="padding: 1px;">&times;</span>') + '</button>' : ''
+        var but = hdu.dim.length ? ' <button onclick="hdulist['+k+'].cols? fitsplot('+k+') : show('+k+'); return false">'+ (hdu.cols?'<i class="fas fa-bars"></i>':'<i class="fas fa-image"></i>') + hdu.dim.join('<span style="padding: 1px;">&times;</span>') + '</button>' : ''
         var colnames = ''
         if (hdu.cols) for (col of hdu.cols) colnames += ' <span class="colname">'+col.name+'</span>'
 
