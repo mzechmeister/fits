@@ -238,7 +238,9 @@ function display(a) {
 
 function nanMinMax(x) {
    var u = x.filter(xi => !Number.isNaN(xi));
-   return [Math.min(...u), Math.max(...u)]
+   var min = u.reduce((min, v) => min < v ? min : v)
+   var max = u.reduce((max, v) => max >= v ? max : v)
+   return [min, max]
 }
 
 show = async (ext) => {
