@@ -41,7 +41,8 @@ async function gethdr(file, pos=0) {
                annot: hdr['TANNOT'+k],
                byteOffset: offset
             }
-            col.byteSize = {"J": 4, "D": 8, "1D": 8, "1L": 1}[col.fmt]
+            col.byteSize = {"L": 1, "J": 4, "K": 8,
+                            "E": 4, "D": 8}[col.fmt.replace(/^[0-9]*/, '')]
             hdu.cols.push(col)
             offset += col.byteSize
         }
@@ -105,8 +106,9 @@ async function fitsdata(hdulist, ext=0) {
         rowsize = hdu.rowSize
         d = []
         for (col of hdu.cols) {
-            getter = {"D": 'getFloat64', "1D": 'getFloat64',
-                      "J": 'getInt32', "1L": 'getInt8'}[col.fmt]
+            getter = {"L": 'getInt8', "J": 'getInt32', "K": 'getInt64',
+                      "E": 'getFloat32', "D": 'getFloat64',
+                     }[col.fmt.replace(/^[0-9]*/, '')]
             dk = []
             for (i=col.byteOffset; i<hdu.datasize; i+=rowsize) {
                 dk.push(view[getter](i))
