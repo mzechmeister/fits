@@ -138,13 +138,13 @@ details {
 
 <br><span id="fileinfo"></span> <span id="info"></span><br>
 <div id="hduinfo"></div>
-<div class="resizeable_iframe" style="height: 400px">
+<div class="resizeable_iframe" style="height: 400px; clear: both;">
 <iframe id="fitsgraph" width="100%" height="100%" style="resize: both;"></iframe>
 </div>
 
 <span id="displayinfo"></span><br>
 colfunc: <input id="func" placeholder="x">
-<label>color map:</label> <select id="colormap" onchange="display(d)">
+<label>color map:</label> <select id="colormap" onchange="display(dispdata)">
 <option>grey</option>
 <option>bb</option>
 <option></option>
@@ -197,7 +197,7 @@ async function doit(filename) {
         var colnames = ''
         if (hdu.cols) for (col of hdu.cols) colnames += ' <span class="colname">'+col.name+'</span>'
         var summary = `${icon} ${k} [${extname}${dim}] ${colnames} ${but}`
-        hduinfo.innerHTML += '<details><summary>'+ summary + '</summary>' +
+        hduinfo.innerHTML += '<details id="tab_'+k+'"><summary>'+ summary + '</summary>' +
             ' <ol><li>'+hdu.cards.join("\n<li>")+'</ol>' +
             '</details>'
     }
@@ -258,9 +258,9 @@ document.getElementById("share").onclick = function(e) {
     _url = new URL(window.location)
     _url = _url.origin + _url.pathname
     args = [url, func, zoom, colormap].filter(x => x.value).map(x => x.id+"="+x.value)
-    //ext = document.querySelector("[id^=tab_]:checked")
-    //if (ext) args.push("ext="+ext.id.slice(4))
-    if (dispdata) args.push("disp="+d.ext)
+    ext = hduinfo.querySelector("details[open]")
+    if (ext) args.push("ext="+ext.id.slice(4))
+    if (dispdata) args.push("disp="+dispdata.ext)
     var link = document.createElement("a")
     link.href = _url + "?" + args.join("&")
     link.append(link.href)
@@ -306,11 +306,11 @@ fitsdisplay.onmousemove = e => {
     displayinfo.innerHTML = " x: "+p.i.toFixed(3)+" y: "+p.j.toFixed(3) +" value: "+ z(p.i,p.j)+ " color: "+ _func(z(p.i,p.j)).toFixed(6)
 }
 
-func.onchange = e => {display(d)}
+func.onchange = e => {display(dispdata)}
 
 document.body.onkeydown = e => {
-    if (e.key == "+") {++zoom.value; display(d)}
-    else if (e.key == "-") {--zoom.value; display(d)}
+    if (e.key == "+") {++zoom.value; display(dispdata)}
+    else if (e.key == "-") {--zoom.value; display(dispdata)}
 }
 
 
@@ -369,7 +369,7 @@ for (var key in url_kwargs) {
 }
 
 doit(url.value).then(async e => {
-   if (ext=url_kwargs['ext']) document.querySelector("#tab_"+ext).click()
+   if (ext=url_kwargs['ext']) document.querySelector("#tab_"+ext).open = true
    if (disp=url_kwargs['disp']) {
       show(disp)
    }
