@@ -169,6 +169,7 @@ function fitsplot(ext=0) {
 async function doit(filename) {
     fileinfo.innerHTML = filename
     fileinfo.className = 'loading'
+    dispdata = null
     try {
        hdulist = await readfits(filename)
     } catch(e) {
@@ -241,11 +242,12 @@ function nanMinMax(x) {
 }
 
 show = async (ext) => {
-    await fitsdata(hdulist, ext);
+    var d = await fitsdata(hdulist, ext);
     d.ext = ext;
     [d.min, d.max] = nanMinMax(d);
     func.placeholder  = '(x-('+d.min+')) / ' + (d.max-d.min);
-    display(d)
+    dispdata = d
+    display(dispdata)
 }
 
 // create shared link
@@ -256,7 +258,7 @@ document.getElementById("share").onclick = function(e) {
     args = [url, func, zoom, colormap].filter(x => x.value).map(x => x.id+"="+x.value)
     //ext = document.querySelector("[id^=tab_]:checked")
     //if (ext) args.push("ext="+ext.id.slice(4))
-    if (d) args.push("disp="+d.ext)
+    if (dispdata) args.push("disp="+d.ext)
     var link = document.createElement("a")
     link.href = _url + "?" + args.join("&")
     link.append(link.href)
@@ -286,7 +288,7 @@ function get_icjc() {
 }
 
 function z(i, j) {
-    var zij = d[Math.round(i-1) + fitsdisplay.width * Math.round(j-1)]
+    var zij = dispdata[Math.round(i-1) + fitsdisplay.width * Math.round(j-1)]
     return zij == undefined ? NaN : zij
 }
 

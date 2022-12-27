@@ -104,7 +104,7 @@ async function fitsdata(hdulist, ext=0) {
         // fits bintable
         view = new DataView(buf, 0)
         rowsize = hdu.rowSize
-        d = []
+        var d = []
         for (col of hdu.cols) {
             getter = {"L": 'getInt8', "J": 'getInt32', "K": 'getInt64',
                       "E": 'getFloat32', "D": 'getFloat64',
@@ -126,7 +126,7 @@ async function fitsdata(hdulist, ext=0) {
                        '-32': Float32Array,
                        '64': BigInt64Array,
                        '-64': Float64Array}[hdu.bitpix]
-        d = new NumberArray(new Int8Array(buf.slice()).reverse().buffer).reverse()
+        var d = new NumberArray(new Int8Array(buf.slice()).reverse().buffer).reverse()
         if (hdu.bitpix == 64) d = [...d].map(Number)   // convert BigInt64Array to array (to prevent: can't convert BigInt to number)
         d.dim = hdu.dim
     }
