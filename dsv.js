@@ -4,8 +4,9 @@ async function dsv(file, ...args) {
     if (typeof file == "string") {
         // nothing needed if file is instanceof File
         [file, ext] = file.split(/[\[\]]/)
-        var hdulist = await readfits(file);
+        var hdulist = await fitsopen(file);
     }
+ 
     var responseText = await fitsdata(hdulist, ext)
     if (!file.ok) console.log(file.statusText, "("+file.url+")")
     if (responseText[0]) {
