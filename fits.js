@@ -1,5 +1,5 @@
 async function gethdr(file, pos=0) {
-    var hdu = {extstart: pos, file: file}
+    var hdu = {extstart: pos, file: file, filename: (file.name ? file.name : file)}
     var cards = []
 
     // read blockwise

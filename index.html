@@ -192,7 +192,7 @@ async function doit(filename) {
     }
     obj = hdulist[0].hdr['OBJECT']
     hduinfo.onclick = e => e.target.className!="colname"   // ignore colnames in clicks
-    fileinfo.innerHTML = hdulist[0].file + (obj? ' ['+obj+']': '')
+    fileinfo.innerHTML = hdulist[0].filename + (obj? ' ['+obj+']': '')
     fileinfo.className = ''
     hduinfo.innerHTML = ''
     for (hdu of hdulist) {
