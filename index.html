@@ -175,6 +175,7 @@ zoom: <input id="zoomfac" style="width: 7ch" onchange="zoom.value=Math.log2(zoom
 function fitsplot(ext=0) {
     var url = hdulist[0].file + "[" + ext + "]"
     plotcontainer.open = true
+    plotcontainer.ext = ext
     fitsgraph.src = "csv_plotter.htm?url=" + url + "&cx=$0&cy=$1&title=" + obj
 }
 
@@ -274,6 +275,7 @@ document.getElementById("share").onclick = function(e) {
     ext = hduinfo.querySelector("details[open]")
     if (ext) args.push("ext="+ext.id.slice(4))
     if (dispdata) args.push("disp="+dispdata.ext)
+    if (plotcontainer.ext) args.push("plot="+plotcontainer.ext)
     var link = document.createElement("a")
     link.href = _url + "?" + args.join("&")
     link.append(link.href)
@@ -385,6 +387,9 @@ doit(url.value).then(async e => {
    if (ext=url_kwargs['ext']) document.querySelector("#tab_"+ext).open = true
    if (disp=url_kwargs['disp']) {
       show(disp)
+   }
+   if (plotext=url_kwargs['plot']) {
+      fitsplot(plotext)
    }
 })
 
