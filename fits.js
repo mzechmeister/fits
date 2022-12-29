@@ -69,7 +69,7 @@ function cards2hdr(cards) {
     return hdr
 }
 
-async function readfits(file) {
+async function fitsopen(file) {
     hdulist = []
     hdu = {extend: 0}
     var k = 0
@@ -81,8 +81,12 @@ async function readfits(file) {
     return hdulist
 }
 
-async function fitsdata(hdulist, ext=0) {
-    hdu = hdulist[ext]
+async function fitsdata(fitsobj, ext=0) {
+    // fitsobj can be: hdu, hdulist, file or url
+    if (fitsobj.size || typeof fitsobj == "string")
+        fitsobj = await fitsopen(fitsobj)   // hdulist
+    hdu = fitsobj.hdr? fitsobj : fitsobj[ext]   // hdu or hdulist
+
     if (!hdu.hdr.NAXIS) return null
     file = hdu.file
 
@@ -91,7 +95,6 @@ async function fitsdata(hdulist, ext=0) {
 
     if (file.size) {
         var response = file.slice(start, stop)
-
     } else {
         var headers = {Range: `bytes=${start}-${stop-1}`};
         var response = await fetch(file, {headers: headers});

@@ -95,7 +95,7 @@ li::marker {
 }
 
 details {
-  clear: both;  // float button the very end in every row
+  clear: both;   /* float button the very end in every row */
 }
 
 #hduinfo summary:hover {
@@ -155,9 +155,9 @@ details {
 <span id="displayinfo"></span><br>
 colfunc: <input id="func" placeholder="x">
 <label>color map:</label> <select id="colormap" onchange="display(dispdata)">
+<option></option>
 <option>grey</option>
 <option>bb</option>
-<option></option>
 </select>
 x: <input id="x" onkeyup="if (event.key === 'Enter') panTo()"> y: <input id="y" onkeyup="if (event.key === 'Enter') panTo()"><span id="coords"></span> <input type="button" value="center" onclick="panTo(fitsdisplay.width/2+0.5, fitsdisplay.height/2+0.5) ">
 <br>
@@ -183,7 +183,7 @@ async function doit(filename) {
     fileinfo.className = 'loading'
     dispdata = null
     try {
-       hdulist = await readfits(filename)
+       hdulist = await fitsopen(filename)
     } catch(e) {
        fileinfo.className = 'error'
        fileinfo.innerHTML = 'Error: Could not read ' + filename
