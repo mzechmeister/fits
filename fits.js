@@ -34,15 +34,21 @@ async function gethdr(file, pos=0) {
         hdu.TFIELDS = hdr['TFIELDS']
         offset = 0
         hdu.cols = []
-        for (k=0; k++<hdu.TFIELDS;) {
+        for (k=0; k++ < hdu.TFIELDS;) {
             col = {k: k-1,
                name: hdr['TTYPE'+k].trim(),   // one-based indexing
-               fmt: hdr['TFORM'+k].trim(),
+               tform: hdr['TFORM'+k].trim(),
                annot: hdr['TANNOT'+k],
                byteOffset: offset
             }
-            col.byteSize = {"L": 1, "J": 4, "K": 8,
-                            "E": 4, "D": 8}[col.fmt.replace(/^[0-9]*/, '')]
+
+            col.fmt = col.tform.slice(-1)   // "A", "D", etc.
+            col.fmtrep = col.tform.slice(0, -1) || 1
+
+            col.fmtbyte = {"L": 1, "I": 2, "J": 4, "K": 8,
+                           "A": 1,
+                           "E": 4, "D": 8}[col.fmt]
+            col.byteSize = col.fmtrep * col.fmtbyte
             hdu.cols.push(col)
             offset += col.byteSize
         }
@@ -109,12 +115,24 @@ async function fitsdata(fitsobj, ext=0) {
         rowsize = hdu.rowSize
         var d = []
         for (col of hdu.cols) {
-            getter = {"L": 'getInt8', "J": 'getInt32', "K": 'getInt64',
+            getter = {"L": 'getInt8', "I": 'getInt16', "J": 'getInt32', "K": 'getInt64',
+                      "A": 'getInt8',
                       "E": 'getFloat32', "D": 'getFloat64',
-                     }[col.fmt.replace(/^[0-9]*/, '')]
+                     }[col.fmt]
             dk = []
-            for (i=col.byteOffset; i<hdu.datasize; i+=rowsize) {
-                dk.push(view[getter](i))
+            if (col.fmtrep==1) {
+                for (i=col.byteOffset; i<hdu.datasize; i+=rowsize)
+                    dk.push(view[getter](i));
+                if (col.fmt=='A') dk = dk.map(x => String.fromCharCode(x));
+            } else {
+                // test sofar only for strings ('2A')
+                for (i=col.byteOffset; i<hdu.datasize; i+=rowsize) {
+                    dkj = []
+                    for (j=0; j<col.byteSize; j+=col.fmtbyte)
+                        dkj.push(view[getter](i+j))
+                    dk.push(dkj)
+                }
+                if (col.fmt=='A') dk = dk.map(x => String.fromCharCode(...x))
             }
             dk.k = col.k
             dk.name = col.name
