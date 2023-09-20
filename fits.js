@@ -1,5 +1,7 @@
 async function gethdr(file, pos=0) {
-    var hdu = {extstart: pos, file: file, filename: (file.name ? file.name : file)}
+    var hdu = {extstart: pos,
+               file: file,
+               filename: (file.name ? file.name : file)}
     var cards = []
 
     // read blockwise
@@ -75,10 +77,18 @@ function cards2hdr(cards) {
     return hdr
 }
 
-async function fitsopen(file) {
+async function fitsopen(file, prefetch=true) {
     hdulist = []
     hdu = {extend: 0}
     var k = 0
+
+    if (prefetch & !file.size) {
+        response = await fetch(file)
+        blob = await response.blob()
+        blob.name = file
+        file = blob
+    }
+
     while (!hdu.last) {
         hdulist.push(hdu = await gethdr(file, hdu.extend))
         hdu.extnum = k++
