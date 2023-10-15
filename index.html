@@ -215,7 +215,7 @@ async function doit(filename) {
             '</details>'
     }
     // color the first 8-char word
-    document.querySelectorAll("li").forEach(x => (x.innerHTML = '<span>'+x.innerText.slice(0,8)+'</span>'+x.innerText.slice(8)))
+    document.querySelectorAll("li").forEach(x => (x.innerHTML = '<span>'+x.textContent.slice(0,8)+'</span>'+x.textContent.slice(8)))
 }
 
 // colormaps
