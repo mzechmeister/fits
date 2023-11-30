@@ -161,7 +161,9 @@ async function fitsdata(fitsobj, ext=0) {
                        '-64': Float64Array}[hdu.bitpix]
         var d = new NumberArray(new Int8Array(buf.slice()).reverse().buffer).reverse()
         if (hdu.bitpix == 64) d = [...d].map(Number)   // convert BigInt64Array to array (to prevent: can't convert BigInt to number)
-        d.dim = hdu.dim
+        if (hdu.hdr['BZERO']!=0 || hdu.hdr['BSCALE']!=1)
+	    d = d.map(x => hdu.hdr['BSCALE'] * x + hdu.hdr['BZERO'])
+	d.dim = hdu.dim
     }
     return d
 }
