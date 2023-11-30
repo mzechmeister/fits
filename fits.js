@@ -152,8 +152,10 @@ async function fitsdata(fitsobj, ext=0) {
         d.dim = hdu.dim
     } else {
         // fits image
-        var b = {'32': 4, '-32': 4, '64': 8, '-64': 8}[hdu.bitpix]
-        var NumberArray = {'32': Int32Array,
+        var b = Math.abs(hdu.bitpix) / 8
+        var NumberArray = {
+		       '16': Int16Array,
+		       '32': Int32Array,
                        '-32': Float32Array,
                        '64': BigInt64Array,
                        '-64': Float64Array}[hdu.bitpix]
