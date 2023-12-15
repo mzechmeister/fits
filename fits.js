@@ -154,16 +154,18 @@ async function fitsdata(fitsobj, ext=0) {
         // fits image
         var b = Math.abs(hdu.bitpix) / 8
         var NumberArray = {
-		       '16': Int16Array,
-		       '32': Int32Array,
+                       '16': Int16Array,
+                       '32': Int32Array,
                        '-32': Float32Array,
                        '64': BigInt64Array,
                        '-64': Float64Array}[hdu.bitpix]
         var d = new NumberArray(new Int8Array(buf.slice()).reverse().buffer).reverse()
         if (hdu.bitpix == 64) d = [...d].map(Number)   // convert BigInt64Array to array (to prevent: can't convert BigInt to number)
-        if (hdu.hdr['BZERO']!=0 || hdu.hdr['BSCALE']!=1)
-	    d = d.map(x => hdu.hdr['BSCALE'] * x + hdu.hdr['BZERO'])
-	d.dim = hdu.dim
+        bzero = hdu.hdr['BZERO'] || 0
+        bscale = hdu.hdr['BSCALE'] || 1
+        if (bzero!=0 || bscale!=1)
+            d = d.map(x => bscale * x + bzero)
+        d.dim = hdu.dim
     }
     return d
 }
