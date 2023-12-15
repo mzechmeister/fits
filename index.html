@@ -154,6 +154,8 @@ details {
 <summary>display</summary>
 <span id="displayinfo"></span><br>
 colfunc: <input id="func" placeholder="x">
+zmin: <input type="range" id="pmin" title="lower percentile">
+zmax: <input type="range" id="pmax" title="upper percentile">
 <label>color map:</label> <select id="colormap" onchange="display(dispdata)">
 <option></option>
 <option>grey</option>
@@ -260,7 +262,11 @@ show = async (ext) => {
     var d = await fitsdata(hdulist, ext);
     d.ext = ext;
     [d.min, d.max] = nanMinMax(d);
-    func.placeholder  = '(x-('+d.min+')) / ' + (d.max-d.min);
+    pmin.value = 1
+    pmax.value = 99
+    cdf = d.filter(x => !isNaN(x)).sort((a, b) => a>b)
+    percentile = p => cdf[Math.round(cdf.length*p/100)]
+    func.placeholder = '(x-('+percentile(1)+')) / ' + (percentile(99)-percentile(1));
     dispdata = d
     display(dispdata)
     dispcontainer.open = true
@@ -372,6 +378,7 @@ function do_zoom(){
 }
 
 zoom.oninput = do_zoom
+pmin.oninput = pmax.oninput = e => { func.placeholder = '(x-('+percentile(pmin.value)+')) / ' + (percentile(pmax.value)-percentile(pmin.value)); display(dispdata)}
 
 url_kwargs = Object.fromEntries(new URL(window.location).searchParams)
 
