@@ -130,6 +130,32 @@ details {
 .error {
   color: red;
 }
+
+.slider input {
+  background: #fff0;
+  pointer-events: none;
+  position: absolute;
+}
+
+.slider ::-moz-range-thumb {
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.slider input,
+.slider ::-moz-range-progress {
+  height: 5px;
+}
+
+.slider > input:first-of-type,
+.slider > input:last-of-type::-moz-range-progress {
+  background-color: lightgrey;
+}
+
+.slider > input:first-of-type::-moz-range-progress {
+  background-color: dodgerblue;
+}
+
 </style>
 
 </head>
@@ -154,8 +180,10 @@ details {
 <summary>display</summary>
 <span id="displayinfo"></span><br>
 colfunc: <input id="func" placeholder="x">
-zmin: <input type="range" id="pmin" title="lower percentile">
-zmax: <input type="range" id="pmax" title="upper percentile">
+zmin <span class="slider" style="width: 200px; display: inline-block;">
+<input type="range" id="pmax" title="upper percentile">
+<input type="range" id="pmin" title="lower percentile">
+</span> zmax
 <label>color map:</label> <select id="colormap" onchange="display(dispdata)">
 <option></option>
 <option>grey</option>
