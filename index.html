@@ -231,7 +231,7 @@ async function doit(filename) {
         k = hdu.extnum
         var extname = hdu.hdr["EXTNAME"] || '<i style="color: grey">PrimaryHDU</i>'
         extname = extname.trim()
-        var icon = hdu.cols ? "fas fa-list" : hdu.dim.length ? "fas fa-image" : "far fa-square"
+        var icon = hdu.cols ? "fas fa-list" : hdu.dim.length ? "fas fa-image" : "fas fa-database"
         icon = `<i class="${icon}"></i>`
         var dim = hdu.dim.join('<span style="padding: 1px;">&times;</span>')
         if (dim) dim = ", " + dim
