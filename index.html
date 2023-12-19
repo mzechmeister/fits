@@ -132,28 +132,28 @@ details {
 }
 
 .slider input {
-  background: #fff0;
+  --start: 1%;
+  --stop: 99%;
+  -webkit-appearance: none;
+  appearance: none;
+  background: none;
   pointer-events: none;
   position: absolute;
+  height: 6px;
+  border-radius: 6px;
+}
+
+.slider input:first-of-type {
+  background-image: linear-gradient(to right, lightgrey var(--start), dodgerblue var(--start), dodgerblue var(--stop), lightgrey var(--stop));
 }
 
 .slider ::-moz-range-thumb {
   cursor: pointer;
   pointer-events: auto;
 }
-
-.slider input,
-.slider ::-moz-range-progress {
-  height: 5px;
-}
-
-.slider > input:first-of-type,
-.slider > input:last-of-type::-moz-range-progress {
-  background-color: lightgrey;
-}
-
-.slider > input:first-of-type::-moz-range-progress {
-  background-color: dodgerblue;
+.slider ::-webkit-slider-thumb {
+  cursor: pointer;
+  pointer-events: auto;
 }
 
 </style>
@@ -181,8 +181,8 @@ details {
 <span id="displayinfo"></span><br>
 colfunc: <input id="func" placeholder="x">
 zmin <span class="slider" style="width: 200px; display: inline-block;">
-<input type="range" id="pmax" title="upper percentile">
 <input type="range" id="pmin" title="lower percentile">
+<input type="range" id="pmax" title="upper percentile">
 </span> zmax
 <label>color map:</label> <select id="colormap" onchange="display(dispdata)">
 <option></option>
@@ -294,7 +294,7 @@ show = async (ext) => {
     pmax.value = 99
     cdf = d.filter(x => !isNaN(x)).sort((a, b) => a>b)
     percentile = p => cdf[Math.round(cdf.length*p/100)]
-    func.placeholder = '(x-('+percentile(1)+')) / ' + (percentile(99)-percentile(1));
+    scale_update()
     dispdata = d
     display(dispdata)
     dispcontainer.open = true
@@ -406,7 +406,12 @@ function do_zoom(){
 }
 
 zoom.oninput = do_zoom
-pmin.oninput = pmax.oninput = e => { func.placeholder = '(x-('+percentile(pmin.value)+')) / ' + (percentile(pmax.value)-percentile(pmin.value)); display(dispdata)}
+pmin.oninput = pmax.oninput = scale_update = e => {
+    pmin.style.setProperty('--start', pmin.value + '%')
+    pmin.style.setProperty('--stop', pmax.value + '%')
+    func.placeholder = '(x-('+percentile(pmin.value)+')) / ' + (percentile(pmax.value)-percentile(pmin.value));
+    display(dispdata)
+}
 
 url_kwargs = Object.fromEntries(new URL(window.location).searchParams)
 
