@@ -233,7 +233,7 @@ zoom: <input id="zoomfac" style="width: 7ch" onchange="zoom.value=Math.log2(zoom
 <input id="sharp" type="checkbox"><label for="sharp">sharp</label>
 <input id="fullscreen" type="checkbox">
 <span id="modebar">
-<label class="fa fa-tint"></label><label for="center" class="fas fa-bullseye"></label><label for="fullscreen" class="fas fa-expand"></label>
+<label class="fa fa-tint" onclick="(colormap.selectedOptions[0].nextElementSibling || colormap.options[1]).selected = true; colormap.onchange()"></label><label for="center" class="fas fa-bullseye"></label><label for="fullscreen" class="fas fa-expand"></label>
 </span>
 <br>
 <div style="width: 100%; overflow: scroll; resize: both; height: 400px; border: 1px solid red" tabindex="0"><canvas id='fitsdisplay' height="0" style="transform: scale(1, -1)"></canvas></div>
