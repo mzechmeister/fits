@@ -156,22 +156,30 @@ details {
   pointer-events: auto;
 }
 
+#modebar {
+  float: right;
+}
+
+#modebar label {
+  border-radius: 4px;
+  color: red;
+  padding: 8px;
+  width: 1.25em;
+}
+
+#modebar label:hover {
+  background: lightgrey;
+}
+
 #fullscreen {
   display: none;
 }
 
-#fullscreen + label {
-  color: red;
-  cursor: pointer;
-  margin-right: 2em;
-  float: right;
-}
-
-#fullscreen:checked + label {
+#fullscreen:checked + #modebar {
   position: fixed;
   top: 0.5em;
   z-index: 99;
-  right: 0;
+  right: 2em;
 }
 
 #fullscreen:checked ~ div {
@@ -211,19 +219,22 @@ zmin <span class="slider" style="width: 200px; display: inline-block;">
 <input type="range" id="pmin" title="lower percentile">
 <input type="range" id="pmax" title="upper percentile">
 </span> zmax
-<label>color map:</label> <select id="colormap" onchange="display(dispdata)">
+<label>color map:</label><select id="colormap" onchange="display(dispdata)">
 <option></option>
 <option>grey</option>
 <option>bb</option>
 </select>
-x: <input id="x" onkeyup="if (event.key === 'Enter') panTo()"> y: <input id="y" onkeyup="if (event.key === 'Enter') panTo()"><span id="coords"></span> <input type="button" value="center" onclick="panTo(fitsdisplay.width/2+0.5, fitsdisplay.height/2+0.5) ">
+x: <input id="x" onkeyup="if (event.key === 'Enter') panTo()"> y: <input id="y" onkeyup="if (event.key === 'Enter') panTo()"><span id="coords"></span> <input type="button" id="center" value="center" onclick="panTo(fitsdisplay.width/2+0.5, fitsdisplay.height/2+0.5) ">
 <br>
 
 <div style="display: inline-block; width: min-content;" id="fitshdulist">
 </div>
 zoom: <input id="zoomfac" style="width: 7ch" onchange="zoom.value=Math.log2(zoomfac.value) ; zoom.oninput()"> <input type="range" id="zoom" min="-6" max="6" step="0.5">
 <input id="sharp" type="checkbox"><label for="sharp">sharp</label>
-<input id="fullscreen" type="checkbox"><label for="fullscreen" class="fas fa-expand"></label>
+<input id="fullscreen" type="checkbox">
+<span id="modebar">
+<label class="fa fa-tint"></label><label for="center" class="fas fa-bullseye"></label><label for="fullscreen" class="fas fa-expand"></label>
+</span>
 <br>
 <div style="width: 100%; overflow: scroll; resize: both; height: 400px; border: 1px solid red" tabindex="0"><canvas id='fitsdisplay' height="0" style="transform: scale(1, -1)"></canvas></div>
 </details>
