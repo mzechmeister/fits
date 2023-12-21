@@ -160,12 +160,16 @@ details {
   display: none;
 }
 
-#fullscreen:checked + label {
+#fullscreen + label {
   color: red;
   cursor: pointer;
+}
+
+#fullscreen:checked + label {
   position: fixed;
-  top: 0;
+  top: 0.5em;
   z-index: 99;
+  right: 20px;
 }
 
 #fullscreen:checked ~ div {
@@ -217,8 +221,8 @@ x: <input id="x" onkeyup="if (event.key === 'Enter') panTo()"> y: <input id="y" 
 </div>
 zoom: <input id="zoomfac" style="width: 7ch" onchange="zoom.value=Math.log2(zoomfac.value) ; zoom.oninput()"> <input type="range" id="zoom" min="-6" max="6" step="0.5">
 <input id="sharp" type="checkbox"><label for="sharp">sharp</label>
-<br>
 <input id="fullscreen" type="checkbox"><label for="fullscreen" class="fas fa-expand"></label>
+<br>
 <div style="width: 100%; overflow: scroll; resize: both; height: 400px; border: 1px solid red" tabindex="0"><canvas id='fitsdisplay' height="0" style="transform: scale(1, -1)"></canvas></div>
 </details>
 
