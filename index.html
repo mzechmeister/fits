@@ -231,7 +231,7 @@ zoom: <input id="zoomfac" style="width: 7ch" onchange="zoom.value=Math.log2(zoom
 <script>
 
 function fitsplot(ext=0) {
-    var url = hdulist[0].file + "[" + ext + "]"
+    var url = hdulist[0].filename + "[" + ext + "]"
     plotcontainer.open = true
     plotcontainer.ext = ext
     fitsgraph.src = "csv_plotter.htm?url=" + url + "&cx=$0&cy=$1&title=" + obj
