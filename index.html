@@ -195,6 +195,27 @@ details {
   top: 0;
 }
 
+#val_pmax, #val_pmin, #val_zmax, #val_zmin {
+  direction: rtl;   /* spinner left */
+  width: 10ch;
+}
+
+#val_pmax, #val_pmin {
+  margin-right: -2ch;  /* percentage unit */
+  padding: 0 2ch 0 0;
+  width: 6ch;
+}
+
+#val_pmin + span {
+  width: 2ch;
+  display: inline-block;
+  text-align: left;
+}
+
+th {
+    font-weight: normal;
+}
+
 </style>
 
 </head>
@@ -218,16 +239,29 @@ details {
 <details id="dispcontainer">
 <summary>display</summary>
 <span id="displayinfo"></span><br>
-colfunc: <input id="func" placeholder="x">
-zmin <span class="slider" style="width: 200px; display: inline-block;">
-<input type="range" id="pmin" title="lower percentile">
-<input type="range" id="pmax" title="upper percentile">
-</span> zmax
-<label>color map:</label><select id="colormap" onchange="display(dispdata)">
+
+<table style="text-align: left;display: inline-block;">
+  <tr>
+    <th>colfunc: <input id="func" placeholder="x">
+    <th style="text-align: right"><input type="number" id="val_pmin" title="lower percentile"><span>%</span>
+    <th><span class="slider" style="width: 200px; display: inline-block; transform: translate(0px, -10px);">
+        <input type="range" id="pmin" title="lower percentile">
+        <input type="range" id="pmax" title="upper percentile">
+      </span>
+    <th><input type="number" id="val_pmax" title="upper percentile">%
+  </tr>
+  <tr>
+  <th><label>color map:</label> <select id="colormap" onchange="display(dispdata)">
 <option></option>
 <option>grey</option>
 <option>bb</option>
 </select>
+  <th style="text-align: right"><input type="number" id="val_zmin" title="lower percentile">
+  <th>
+  <th><input type="number" id="val_zmax" title="upper percentile">
+  </tr>
+</table>
+
 x: <input id="x" onkeyup="if (event.key === 'Enter') panTo()"> y: <input id="y" onkeyup="if (event.key === 'Enter') panTo()"><span id="coords"></span> <input type="button" id="center" value="center" onclick="panTo(fitsdisplay.width/2+0.5, fitsdisplay.height/2+0.5) ">
 <br>
 
@@ -452,6 +486,10 @@ zoom.oninput = do_zoom
 pmin.oninput = pmax.oninput = scale_update = e => {
     pmin.style.setProperty('--start', pmin.value + '%')
     pmin.style.setProperty('--stop', pmax.value + '%')
+    val_pmin.value = pmin.value
+    val_pmax.value = pmax.value
+    val_zmin.value = percentile(pmin.value)
+    val_zmax.value = percentile(pmax.value)
     func.placeholder = '(x-('+percentile(pmin.value)+')) / ' + (percentile(pmax.value)-percentile(pmin.value));
     display(dispdata)
 }
