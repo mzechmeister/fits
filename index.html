@@ -206,6 +206,10 @@ details {
   width: 6ch;
 }
 
+input[type="number"] {
+  text-align: right;
+}
+
 #val_pmin + span {
   width: 2ch;
   display: inline-block;
@@ -238,7 +242,6 @@ th {
 
 <details id="dispcontainer">
 <summary>display</summary>
-<span id="displayinfo"></span><br>
 
 <table style="text-align: left;display: inline-block;">
   <tr>
@@ -262,11 +265,9 @@ th {
   </tr>
 </table>
 
-x: <input id="x" onkeyup="if (event.key === 'Enter') panTo()"> y: <input id="y" onkeyup="if (event.key === 'Enter') panTo()"><span id="coords"></span> <input type="button" id="center" value="center" onclick="panTo(fitsdisplay.width/2+0.5, fitsdisplay.height/2+0.5) ">
 <br>
+x: <input  id="x" type="number" onkeyup="if (event.key === 'Enter') panTo()"> y: <input id="y" type="number" onkeyup="if (event.key === 'Enter') panTo()"><span id="coords"></span> <input type="button" id="center" value="center" onclick="panTo(fitsdisplay.width/2+0.5, fitsdisplay.height/2+0.5) ">
 
-<div style="display: inline-block; width: min-content;" id="fitshdulist">
-</div>
 zoom: <input id="zoomfac" style="width: 7ch" onchange="zoom.value=Math.log2(zoomfac.value) ; zoom.oninput()"> <input type="range" id="zoom" min="-6" max="6" step="0.5">
 <input id="sharp" type="checkbox"><label for="sharp">sharp</label>
 <input id="fullscreen" type="checkbox">
@@ -274,6 +275,7 @@ zoom: <input id="zoomfac" style="width: 7ch" onchange="zoom.value=Math.log2(zoom
 <label class="fa fa-tint" onclick="(colormap.selectedOptions[0].nextElementSibling || colormap.options[1]).selected = true; colormap.onchange()"></label><label for="center" class="fas fa-bullseye"></label><label for="fullscreen" class="fas fa-expand"></label>
 </span>
 <br>
+<span id="displayinfo"></span><br>
 <div style="width: 100%; overflow: scroll; resize: both; height: 400px; border: 1px solid red" tabindex="0"><canvas id='fitsdisplay' height="0" style="transform: scale(1, -1)"></canvas></div>
 </details>
 
