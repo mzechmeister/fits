@@ -335,7 +335,7 @@ cmgrey = x => [x, x, x]
 function display(a) {
     if (!a) {console.log('No data to display.'); return}
     norm = new Function("z", `return (z-(${val_zmin.value})) / (${val_zmax.value}-(${val_zmin.value}))`)
-    _func = new Function("z", "x = norm(z); return " + (func.value || func.placeholder))
+    _func = new Function("z", "let x = norm(z); return " + (func.value || func.placeholder))
 
     var canvas = fitsdisplay;
     var ctx = canvas.getContext("2d");
