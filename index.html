@@ -370,7 +370,7 @@ show = async (ext) => {
     pmin.value = 1
     pmax.value = 99
     cdf = d.filter(x => !isNaN(x)).sort((a, b) => a>b)
-    percentile = p => cdf[Math.round(cdf.length*p/100)]
+    percentile = p => cdf[Math.round((cdf.length-1)*p/100)]
     scale_update()
     dispdata = d
     display(dispdata)
