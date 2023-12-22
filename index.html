@@ -334,7 +334,8 @@ cmgrey = x => [x, x, x]
 
 function display(a) {
     if (!a) {console.log('No data to display.'); return}
-    _func = new Function("x", "return " + (func.value || func.placeholder))
+    norm = new Function("z", `return (z-(${val_zmin.value})) / (${val_zmax.value}-(${val_zmin.value}))`)
+    _func = new Function("z", "x = norm(z); return " + (func.value || func.placeholder))
 
     var canvas = fitsdisplay;
     var ctx = canvas.getContext("2d");
@@ -492,7 +493,6 @@ pmin.oninput = pmax.oninput = scale_update = e => {
     val_pmax.value = pmax.value
     val_zmin.value = percentile(pmin.value)
     val_zmax.value = percentile(pmax.value)
-    func.placeholder = '(x-('+percentile(pmin.value)+')) / ' + (percentile(pmax.value)-percentile(pmin.value));
     display(dispdata)
 }
 
