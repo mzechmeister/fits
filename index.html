@@ -248,8 +248,8 @@ th {
     <th>colfunc: <input id="func" placeholder="x">
     <th style="text-align: right"><input type="number" id="val_pmin" title="lower percentile"><span>%</span>
     <th><span class="slider" style="width: 200px; display: inline-block; transform: translate(0px, -10px);">
-        <input type="range" id="pmin" title="lower percentile">
-        <input type="range" id="pmax" title="upper percentile">
+        <input type="range" id="rng_pmin" title="lower percentile">
+        <input type="range" id="rng_pmax" title="upper percentile">
       </span>
     <th><input type="number" id="val_pmax" title="upper percentile">%
   </tr>
@@ -370,8 +370,8 @@ show = async (ext) => {
     var d = await fitsdata(hdulist, ext);
     d.ext = ext;
     [d.min, d.max] = nanMinMax(d);
-    pmin.value = 1
-    pmax.value = 99
+    val_pmin.value = rng_pmin.value = 1
+    val_pmax.value = rng_pmax.value = 99
     cdf = d.filter(x => !isNaN(x)).sort((a, b) => a>b)
     percentile = p => cdf[Math.round((cdf.length-1)*p/100)]
     scale_update()
@@ -485,14 +485,20 @@ function do_zoom(){
     panTo(pc.i, pc.j)
 }
 
+function sync(A, B) {
+    A.addEventListener("input",  () => {B.value = A.value; scale_update();} )
+    B.addEventListener("change", () => {A.value = B.value; scale_update();} )
+}
+
+sync(rng_pmin, val_pmin)
+sync(rng_pmax, val_pmax)
 zoom.oninput = do_zoom
-pmin.oninput = pmax.oninput = scale_update = e => {
-    pmin.style.setProperty('--start', pmin.value + '%')
-    pmin.style.setProperty('--stop', pmax.value + '%')
-    val_pmin.value = pmin.value
-    val_pmax.value = pmax.value
-    val_zmin.value = percentile(pmin.value)
-    val_zmax.value = percentile(pmax.value)
+
+scale_update = e => {
+    rng_pmin.style.setProperty('--start', val_pmin.value + '%')
+    rng_pmin.style.setProperty('--stop', val_pmax.value + '%')
+    val_zmin.value = percentile(val_pmin.value)
+    val_zmax.value = percentile(val_pmax.value)
     display(dispdata)
 }
 
