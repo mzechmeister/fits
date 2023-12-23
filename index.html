@@ -485,22 +485,22 @@ function do_zoom(){
     panTo(pc.i, pc.j)
 }
 
-function sync(A, B) {
-    A.addEventListener("input",  () => {B.value = A.value; scale_update();} )
-    B.addEventListener("change", () => {A.value = B.value; scale_update();} )
+function sync(A, B, Z) {
+    A.addEventListener("input",  () => {B.value = A.value; Z.value = percentile(A.value); scale_update();} )
+    B.addEventListener("change", () => {A.value = B.value; Z.value = percentile(B.value); scale_update();} )
+    Z.addEventListener("change", () => {z = +Z.value; i = Math.max(cdf.findLastIndex(a => a<z), 0) ; A.value = B.value = 100*i/(cdf.length-1) ; scale_update();} )   /* a binary search might be more efficient */
 }
 
-sync(rng_pmin, val_pmin)
-sync(rng_pmax, val_pmax)
+sync(rng_pmin, val_pmin, val_zmin)
+sync(rng_pmax, val_pmax, val_zmax)
 zoom.oninput = do_zoom
 
 scale_update = e => {
     rng_pmin.style.setProperty('--start', val_pmin.value + '%')
     rng_pmin.style.setProperty('--stop', val_pmax.value + '%')
-    val_zmin.value = percentile(val_pmin.value)
-    val_zmax.value = percentile(val_pmax.value)
     display(dispdata)
 }
+
 
 url_kwargs = Object.fromEntries(new URL(window.location).searchParams)
 
