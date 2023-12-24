@@ -486,9 +486,9 @@ function do_zoom(){
 }
 
 function sync(A, B, Z) {
-    A.addEventListener("input",  () => {B.value = A.value; Z.value = percentile(A.value); scale_update();} )
-    B.addEventListener("change", () => {A.value = B.value; Z.value = percentile(B.value); scale_update();} )
-    Z.addEventListener("change", () => {z = +Z.value; A.value = B.value = inv_percentile(z); scale_update();} )   /* a binary search might be more efficient */
+    A.addEventListener("input",  () => {Z.value = percentile(B.value = A.value); scale_update()} )
+    B.addEventListener("change", () => {Z.value = percentile(A.value = B.value); scale_update()} )
+    Z.addEventListener("change", () => {A.value = B.value = inv_percentile(+Z.value); scale_update()} )   /* a binary search might be more efficient */
 }
 
 sync(rng_pmin, val_pmin, val_zmin)
