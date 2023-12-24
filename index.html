@@ -196,7 +196,6 @@ details {
 }
 
 #val_pmax, #val_pmin, #val_zmax, #val_zmin {
-  direction: rtl;   /* spinner left */
   width: 10ch;
 }
 
@@ -370,10 +369,11 @@ show = async (ext) => {
     var d = await fitsdata(hdulist, ext);
     d.ext = ext;
     [d.min, d.max] = nanMinMax(d);
-    val_pmin.value = rng_pmin.value = 1
-    val_pmax.value = rng_pmax.value = 99
     cdf = d.filter(x => !isNaN(x)).sort((a, b) => a>b)
     percentile = p => cdf[Math.round((cdf.length-1)*p/100)]
+    inv_percentile = z => 100 * Math.max(cdf.findLastIndex(a => a<z), 0) / (cdf.length-1)
+    val_zmin.value = percentile(val_pmin.value = rng_pmin.value = 1)
+    val_zmax.value = percentile(val_pmax.value = rng_pmax.value = 99)
     scale_update()
     dispdata = d
     display(dispdata)
@@ -488,7 +488,7 @@ function do_zoom(){
 function sync(A, B, Z) {
     A.addEventListener("input",  () => {B.value = A.value; Z.value = percentile(A.value); scale_update();} )
     B.addEventListener("change", () => {A.value = B.value; Z.value = percentile(B.value); scale_update();} )
-    Z.addEventListener("change", () => {z = +Z.value; i = Math.max(cdf.findLastIndex(a => a<z), 0) ; A.value = B.value = 100*i/(cdf.length-1) ; scale_update();} )   /* a binary search might be more efficient */
+    Z.addEventListener("change", () => {z = +Z.value; A.value = B.value = inv_percentile(z); scale_update();} )   /* a binary search might be more efficient */
 }
 
 sync(rng_pmin, val_pmin, val_zmin)
