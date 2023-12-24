@@ -10,6 +10,7 @@ body {
   font-size: smaller;
 }
 
+
 ol {
   width: 80ch;
   font-family: monospace;
@@ -96,9 +97,19 @@ li::marker {
 
 details {
   clear: both;   /* float button the very end in every row */
+  pointer-events: none;
 }
 
-#hduinfo summary:hover {
+details * {
+  pointer-events: auto;
+}
+
+summary {
+  cursor: pointer;
+  width: fit-content;
+}
+
+summary:hover {
   background: #eef;
 }
 
