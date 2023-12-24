@@ -358,17 +358,9 @@ function display(a) {
     do_zoom()
 }
 
-function nanMinMax(x) {
-   var u = x.filter(xi => !Number.isNaN(xi));
-   var min = u.reduce((min, v) => min < v ? min : v)
-   var max = u.reduce((max, v) => max >= v ? max : v)
-   return [min, max]
-}
-
 show = async (ext) => {
     var d = await fitsdata(hdulist, ext);
     d.ext = ext;
-    [d.min, d.max] = nanMinMax(d);
     cdf = d.filter(x => !isNaN(x)).sort((a, b) => a>b)
     percentile = p => cdf[Math.round((cdf.length-1)*p/100)]
     inv_percentile = z => 100 * Math.max(cdf.findLastIndex(a => a<z), 0) / (cdf.length-1)
