@@ -219,6 +219,12 @@ th {
     font-weight: normal;
 }
 
+.histbar {
+  fill: #0a08;
+  stroke: #0a0;
+  stroke-width: 0.5px;
+}
+
 </style>
 
 </head>
@@ -259,7 +265,7 @@ th {
 <option>bb</option>
 </select>
   <th style="text-align: right"><input type="number" id="val_zmin" title="lower percentile">
-  <th>
+  <th><svg id="svg_cdf" height="20" width="200" style="border: #999; transform: scaleY(-1);"></svg>
   <th><input type="number" id="val_zmax" title="upper percentile">
   </tr>
 </table>
@@ -490,6 +496,21 @@ zoom.oninput = do_zoom
 scale_update = e => {
     rng_pmin.style.setProperty('--start', val_pmin.value + '%')
     rng_pmin.style.setProperty('--stop', val_pmax.value + '%')
+
+    zbin = [...Array(100)].map((x,i) => +val_zmin.value + i/100 * (val_zmax.value-val_zmin.value))
+    //bincdf = [...zbin].map(z => inv_percentile(z))
+    i = 0; bincdf = zbin.map(z => i += cdf.slice(i).findIndex(x => x > z))   // sorted inv_percentile
+    binpdf = bincdf.slice(1).map((x,i) => x-bincdf[i])
+    pdfmax = Math.max(...binpdf)
+
+    svg_cdf.innerHTML = ""
+    for ([i, pdf] of binpdf.entries()) {
+        x = document.createElementNS(svg_cdf.namespaceURI, 'rect');
+        x.setAttribute('width', 2);
+        x.setAttribute('height', pdf/pdfmax*20);
+        x.setAttribute('x', i*2); svg_cdf.append(x);
+        x.setAttribute('class', 'histbar')
+    }
     display(dispdata)
 }
 
