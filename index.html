@@ -262,12 +262,12 @@ th {
 <table style="text-align: left;display: inline-block;">
   <tr>
     <th>colfunc: <input id="func" placeholder="x">
-    <th style="text-align: right"><input type="number" id="val_pmin" title="lower percentile"><span>%</span>
+    <th style="text-align: right"><input type="number" id="val_pmin" title="lower percentile" min=0 max=100><span>%</span>
     <th><span class="slider" style="width: 200px; display: inline-block; transform: translate(0px, -10px);">
         <input type="range" id="rng_pmin" title="lower percentile">
         <input type="range" id="rng_pmax" title="upper percentile">
       </span>
-    <th><input type="number" id="val_pmax" title="upper percentile">%
+    <th><input type="number" id="val_pmax" title="upper percentile" min=0 max=100>%
   </tr>
   <tr>
   <th><label>color map:</label> <select id="colormap" onchange="display(dispdata)">
