@@ -440,10 +440,11 @@ function get_icjc() {
     // get image coords at center of view
     r = scrbar_width()
 
-    innerwidth = fitsdisplay.parentElement.getBoundingClientRect().width - r.scr_width - r.bL - r.bR
-    innerheight = fitsdisplay.parentElement.getBoundingClientRect().height - r.scr_height - r.bT - r.bB
-    Xc = fitsdisplay.parentElement.getBoundingClientRect().left + r.bL + innerwidth / 2
-    Yc = fitsdisplay.parentElement.getBoundingClientRect().top  + r.bT + innerheight / 2
+    vp = fitsdisplay.parentElement.getBoundingClientRect()  // "viewport"
+    innerwidth = vp.width - r.scr_width - r.bL - r.bR
+    innerheight = vp.height - r.scr_height - r.bT - r.bB
+    Xc = vp.left + r.bL + innerwidth / 2
+    Yc = vp.top  + r.bT + innerheight / 2
     return get_ij(Xc, Yc)
 }
 
@@ -481,10 +482,10 @@ function panTo(i=null, j=null) {
     }
     r = scrbar_width()
     vp = fitsdisplay.parentElement.getBoundingClientRect()  // "viewport"
-    wp = vp.width - r.scr_width - r.bR - r.bL
-    hp = vp.height - r.scr_height -r .bT -r.bB
-    var x = padx - wp/2 + (i-0.5)*scale
-    var y = pady + fitsdisplay.height*scale - hp/2 - (j-0.5)*scale
+    innerwidth = vp.width - r.scr_width - r.bL - r.bR
+    innerheight = vp.height - r.scr_height - r.bT -r.bB
+    var x = padx - innerwidth/2 + (i-0.5)*scale
+    var y = pady + fitsdisplay.height*scale - innerheight/2 - (j-0.5)*scale
     fitsdisplay.parentElement.scrollTo(x, y)
 }
 
