@@ -283,7 +283,7 @@ th {
 </table>
 
 <br>
-x: <input  id="x" type="number" onchange="panTo()"> y: <input id="y" type="number" onchange="panTo()"><span id="coords"></span> <input type="button" id="center" value="center" onclick="panTo(fitsdisplay.width/2+0.5, fitsdisplay.height/2+0.5) ">
+x: <input id="x_in" type="number" onchange="panTo()"> y: <input id="y_in" type="number" onchange="panTo()"><span id="coords"></span> <input type="button" id="center" value="center" onclick="panTo(fitsdisplay.width/2+0.5, fitsdisplay.height/2+0.5)">
 
 zoom: <input id="zoomfac" style="width: 7ch" onchange="zoom.value=Math.log2(zoomfac.value) ; zoom.oninput()"> <input type="range" id="zoom" min="-6" max="6" step="0.5">
 <input id="sharp" type="checkbox"><label for="sharp">sharp</label>
@@ -454,8 +454,8 @@ function z(i, j) {
 
 fitsdisplay.onclick = e => {
     p = getMousePos(e);
-    x.value = p.i.toFixed(3)   // one based indexing
-    y.value = p.j.toFixed(3)
+    x_in.value = p.i.toFixed(3)   // one based indexing
+    y_in.value = p.j.toFixed(3)
     coords.innerHTML = " value: "+ z(p.i,p.j)+ " color: "+ _func(z(p.i,p.j)).toFixed(6)
 }
 
@@ -476,8 +476,8 @@ scale = null
 
 function panTo(i=null, j=null) {
     if (i===null) {
-        i = document.getElementById('x').value
-        j = document.getElementById('y').value
+        i = document.getElementById('x_in').value
+        j = document.getElementById('y_in').value
     }
     r = scrbar_width()
     vp = fitsdisplay.parentElement.getBoundingClientRect()  // "viewport"
