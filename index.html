@@ -530,17 +530,21 @@ scale_update = e => {
 
     zbin = [...Array(100)].map((x,i) => +val_zmin.value + i/100 * (val_zmax.value-val_zmin.value))
     //bincdf = [...zbin].map(z => inv_percentile(z))
-    i = 0; bincdf = zbin.map(z => i += cdf.slice(i).findIndex(x => x > z))   // sorted inv_percentile
-    binpdf = bincdf.slice(1).map((x,i) => x-bincdf[i])
-    pdfmax = Math.max(...binpdf)
-
+    var sgn = Math.sign(val_zmax.value - val_zmin.value)
     svg_cdf.innerHTML = ""
-    for ([i, pdf] of binpdf.entries()) {
-        x = document.createElementNS(svg_cdf.namespaceURI, 'rect');
-        x.setAttribute('width', 2);
-        x.setAttribute('height', pdf/pdfmax*20);
-        x.setAttribute('x', i*2); svg_cdf.append(x);
-        x.setAttribute('class', 'histbar')
+    if (sgn!=0) {
+        i = 0; bincdf = (sgn==1 ? zbin : [...zbin].reverse()).map(z => i += cdf.slice(i).findIndex(x => x > z))   // sorted inv_percentile
+        binpdf = bincdf.slice(1).map((x,i) => x-bincdf[i])
+        if (sgn==-1) binpdf.reverse()
+        pdfmax = Math.max(...binpdf)
+
+        for ([i, pdf] of binpdf.entries()) {
+            x = document.createElementNS(svg_cdf.namespaceURI, 'rect');
+            x.setAttribute('width', 2);
+            x.setAttribute('height', pdf/pdfmax*20);
+            x.setAttribute('x', i*2); svg_cdf.append(x);
+            x.setAttribute('class', 'histbar')
+        }
     }
     display(dispdata)
 }
