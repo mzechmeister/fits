@@ -150,8 +150,11 @@ summary:hover {
   background: none;
   pointer-events: none;
   position: absolute;
+  width: calc(100% - 4px);
   height: 6px;
   border-radius: 6px;
+  margin: 0 2px;
+  top: -3px;
 }
 
 .slider input:first-of-type {
@@ -263,10 +266,10 @@ th {
   <tr>
     <th>colfunc: <input id="func" placeholder="x">
     <th style="text-align: right"><input type="number" id="val_pmin" title="lower percentile" min=0 max=100><span>%</span>
-    <th><span class="slider" style="width: 200px; display: inline-block; transform: translate(0px, -10px);">
+    <th><div class="slider" style="position: relative; width: 200px;">
         <input type="range" id="rng_pmin" title="lower percentile">
         <input type="range" id="rng_pmax" title="upper percentile">
-      </span>
+      </div>
     <th><input type="number" id="val_pmax" title="upper percentile" min=0 max=100>%
   </tr>
   <tr>
