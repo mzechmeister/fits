@@ -273,7 +273,7 @@ th {
     <th><input type="number" id="val_pmax" title="upper percentile" min=0 max=100>%
   </tr>
   <tr>
-  <th><label>color map:</label> <select id="colormap" onchange="display(dispdata)">
+  <th><label>color map:</label> <select id="colormap" onchange="redraw()">
 <option></option>
 <option>grey</option>
 <option>bb</option>
@@ -354,6 +354,8 @@ cmgrey = x => [x, x, x]
 
 function display(a) {
     if (!a) {console.log('No data to display.'); return}
+    scale_update()
+
     norm = new Function("z", `return (z-(${val_zmin.value})) / (${val_zmax.value}-(${val_zmin.value}))`)
     _func = new Function("z", "let x = norm(z); return " + (func.value || func.placeholder))
 
@@ -379,8 +381,9 @@ function display(a) {
     //ctx.scale(1, -1)
     ctx.imageSmoothingEnabled = false
     ctx.putImageData(imgData, 0, 0);
-    do_zoom()
 }
+
+redraw = () => display(dispdata)
 
 show = async (ext) => {
     var d = await fitsdata(hdulist, ext);
@@ -390,10 +393,11 @@ show = async (ext) => {
     inv_percentile = z => 100 * Math.max(cdf.findLastIndex(a => a<z), 0) / (cdf.length-1)
     val_zmin.value = percentile(val_pmin.value = rng_pmin.value = 1)
     val_zmax.value = percentile(val_pmax.value = rng_pmax.value = 99)
-    scale_update()
     dispdata = d
     dispcontainer.open = true
+
     display(dispdata)
+    do_zoom()
 }
 
 // create shared link
@@ -468,11 +472,11 @@ fitsdisplay.onmousemove = e => {
     displayinfo.innerHTML = " x: "+p.i.toFixed(3)+" y: "+p.j.toFixed(3) +" value: "+ z(p.i,p.j)+ " color: "+ _func(z(p.i,p.j)).toFixed(6)
 }
 
-func.onchange = e => {display(dispdata)}
+func.onchange = redraw
 
 document.body.onkeydown = e => {
-    if (e.key == "+") {++zoom.value; display(dispdata)}
-    else if (e.key == "-") {--zoom.value; display(dispdata)}
+    if (e.key == "+") {++zoom.value; do_zoom()}
+    else if (e.key == "-") {--zoom.value; do_zoom()}
 }
 
 
@@ -519,9 +523,9 @@ function do_zoom(){
 }
 
 function sync(A, B, Z) {
-    A.addEventListener("input",  () => {Z.value = percentile(B.value = A.value); scale_update()} )
-    B.addEventListener("change", () => {Z.value = percentile(A.value = B.value); scale_update()} )
-    Z.addEventListener("change", () => {A.value = B.value = inv_percentile(+Z.value); scale_update()} )   /* a binary search might be more efficient */
+    A.addEventListener("input",  () => {Z.value = percentile(B.value = A.value); redraw()} )
+    B.addEventListener("change", () => {Z.value = percentile(A.value = B.value); redraw()} )
+    Z.addEventListener("change", () => {A.value = B.value = inv_percentile(+Z.value); redraw()} )   /* a binary search might be more efficient */
 }
 
 sync(rng_pmin, val_pmin, val_zmin)
@@ -550,7 +554,6 @@ scale_update = e => {
             x.setAttribute('class', 'histbar')
         }
     }
-    display(dispdata)
 }
 
 
