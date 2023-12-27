@@ -347,6 +347,21 @@ async function doit(filename) {
     document.querySelectorAll("li").forEach(x => (x.innerHTML = '<span>'+x.textContent.slice(0,8)+'</span>'+x.textContent.slice(8)))
 }
 
+show = async (ext) => {
+    var d = await fitsdata(hdulist, ext);
+    d.ext = ext;
+    cdf = d.filter(x => !isNaN(x)).sort((a, b) => a>b)
+    percentile = p => cdf[Math.round((cdf.length-1)*p/100)]
+    inv_percentile = z => 100 * Math.max(cdf.findLastIndex(a => a<z), 0) / (cdf.length-1)
+    val_zmin.value = percentile(val_pmin.value = rng_pmin.value = 1)
+    val_zmax.value = percentile(val_pmax.value = rng_pmax.value = 99)
+    dispdata = d
+    dispcontainer.open = true
+
+    display(dispdata)
+    do_zoom()
+}
+
 // colormaps
 // https://github.com/matplotlib/matplotlib/blob/9f96205464930c9064eb20af462c79ac47c6b254/lib/matplotlib/_cm.py#L158
 cmbb = x => [2 * x, 2 * x - 0.5, 2 * x - 1]  // ds9bb, afmhot
@@ -384,21 +399,6 @@ function display(a) {
 }
 
 redraw = () => display(dispdata)
-
-show = async (ext) => {
-    var d = await fitsdata(hdulist, ext);
-    d.ext = ext;
-    cdf = d.filter(x => !isNaN(x)).sort((a, b) => a>b)
-    percentile = p => cdf[Math.round((cdf.length-1)*p/100)]
-    inv_percentile = z => 100 * Math.max(cdf.findLastIndex(a => a<z), 0) / (cdf.length-1)
-    val_zmin.value = percentile(val_pmin.value = rng_pmin.value = 1)
-    val_zmax.value = percentile(val_pmax.value = rng_pmax.value = 99)
-    dispdata = d
-    dispcontainer.open = true
-
-    display(dispdata)
-    do_zoom()
-}
 
 // create shared link
 document.getElementById("share").onclick = function(e) {
@@ -460,26 +460,6 @@ function z(i, j) {
     return zij == undefined ? NaN : zij
 }
 
-fitsdisplay.onclick = e => {
-    p = getMousePos(e);
-    x_in.value = p.i.toFixed(3)   // one based indexing
-    y_in.value = p.j.toFixed(3)
-    coords.innerHTML = " value: "+ z(p.i,p.j)+ " color: "+ _func(z(p.i,p.j)).toFixed(6)
-}
-
-fitsdisplay.onmousemove = e => {
-    p = getMousePos(e);
-    displayinfo.innerHTML = " x: "+p.i.toFixed(3)+" y: "+p.j.toFixed(3) +" value: "+ z(p.i,p.j)+ " color: "+ _func(z(p.i,p.j)).toFixed(6)
-}
-
-func.onchange = redraw
-
-document.body.onkeydown = e => {
-    if (e.key == "+") {++zoom.value; do_zoom()}
-    else if (e.key == "-") {--zoom.value; do_zoom()}
-}
-
-
 scale = null
 
 function panTo(i=null, j=null) {
@@ -522,17 +502,7 @@ function do_zoom(){
     panTo(pc.i, pc.j)
 }
 
-function sync(A, B, Z) {
-    A.addEventListener("input",  () => {Z.value = percentile(B.value = A.value); redraw()} )
-    B.addEventListener("change", () => {Z.value = percentile(A.value = B.value); redraw()} )
-    Z.addEventListener("change", () => {A.value = B.value = inv_percentile(+Z.value); redraw()} )   /* a binary search might be more efficient */
-}
-
-sync(rng_pmin, val_pmin, val_zmin)
-sync(rng_pmax, val_pmax, val_zmax)
-zoom.oninput = do_zoom
-
-scale_update = e => {
+function scale_update() {
     rng_pmin.style.setProperty('--start', val_pmin.value + '%')
     rng_pmin.style.setProperty('--stop', val_pmax.value + '%')
 
@@ -555,6 +525,37 @@ scale_update = e => {
         }
     }
 }
+
+
+function sync(A, B, Z) {
+    A.addEventListener("input",  () => {Z.value = percentile(B.value = A.value); redraw()} )
+    B.addEventListener("change", () => {Z.value = percentile(A.value = B.value); redraw()} )
+    Z.addEventListener("change", () => {A.value = B.value = inv_percentile(+Z.value); redraw()} )   /* a binary search might be more efficient */
+}
+
+sync(rng_pmin, val_pmin, val_zmin)
+sync(rng_pmax, val_pmax, val_zmax)
+
+func.onchange = redraw
+zoom.oninput = do_zoom
+
+document.body.onkeydown = e => {
+    if (e.key == "+") {++zoom.value; do_zoom()}
+    else if (e.key == "-") {--zoom.value; do_zoom()}
+}
+
+fitsdisplay.onclick = e => {
+    p = getMousePos(e);
+    x_in.value = p.i.toFixed(3)   // one based indexing
+    y_in.value = p.j.toFixed(3)
+    coords.innerHTML = " value: "+ z(p.i,p.j)+ " color: "+ _func(z(p.i,p.j)).toFixed(6)
+}
+
+fitsdisplay.onmousemove = e => {
+    p = getMousePos(e);
+    displayinfo.innerHTML = " x: "+p.i.toFixed(3)+" y: "+p.j.toFixed(3) +" value: "+ z(p.i,p.j)+ " color: "+ _func(z(p.i,p.j)).toFixed(6)
+}
+
 
 
 url_kwargs = Object.fromEntries(new URL(window.location).searchParams)
