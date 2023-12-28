@@ -405,7 +405,7 @@ document.getElementById("share").onclick = function(e) {
     e.preventDefault()
     _url = new URL(window.location)
     _url = _url.origin + _url.pathname
-    args = [url, func, zoom, colormap].filter(x => x.value).map(x => x.id+"="+x.value)
+    args = [url, func, zoom, colormap, val_zmin, val_zmax, x_in, y_in].filter(x => x.value).map(x => x.id+"="+x.value)
     ext = hduinfo.querySelector("details[open]")
     if (ext) args.push("ext="+ext.id.slice(4))
     if (dispdata) args.push("disp="+dispdata.ext)
