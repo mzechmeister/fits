@@ -486,8 +486,11 @@ function do_zoom(){
     vp = fitsdisplay.parentElement.getBoundingClientRect()  // "viewport"
     hp = vp.height - scrollBarWidth
     wp = vp.width - scrollBarWidth
+    // scaling by transform does not apply to the CSS width; so recompute margin to compensate
+    // margin: top right bottom left
     fitsdisplay.style["margin"] = sharp.checked ? '' : hp+'px '+(wp+fitsdisplay.width*scale-fitsdisplay.width+1)+'px '+(hp+fitsdisplay.height*scale-fitsdisplay.height-1)+'px '+ wp+'px'
 
+    // without padding (sharp) only translate to center
     fitsdisplay.style.transform = "scale("+scale+",-"+scale+") translate(0,-100%)"
     padx = (fitsdisplay.width - fitsdisplay.width*scale) / 2
     padx = Math.max(0, padx, (wp - fitsdisplay.width*scale)/2)
