@@ -482,26 +482,27 @@ function do_zoom(){
     scale = 2**zoom.value
     zoomfac.value = scale < 1 ? '1/'+(+(1/scale).toFixed(3)) : +scale.toFixed(3)
 
-    scrollBarWidth = fitsdisplay.parentElement.offsetWidth - fitsdisplay.parentElement.clientWidth;
+    r = scrbar_width()
     vp = fitsdisplay.parentElement.getBoundingClientRect()  // "viewport"
-    hp = vp.height - scrollBarWidth
-    wp = vp.width - scrollBarWidth
+    innerwidth = vp.width - r.scr_width - r.bL - r.bR
+    innerheight = vp.height - r.scr_height - r.bT -r.bB
+
     // scaling by transform does not apply to the CSS width; so recompute margin to compensate
     // margin: top right bottom left
-    fitsdisplay.style["margin"] = sharp.checked ? '' : hp+'px '+(wp+fitsdisplay.width*scale-fitsdisplay.width+1)+'px '+(hp+fitsdisplay.height*scale-fitsdisplay.height-1)+'px '+ wp+'px'
+    fitsdisplay.style["margin"] = sharp.checked ? '' : innerheight+'px '+(innerwidth+fitsdisplay.width*scale-fitsdisplay.width)+'px '+(innerheight+fitsdisplay.height*scale-fitsdisplay.height)+'px '+ innerwidth+'px'
 
     // without padding (sharp) only translate to center
     fitsdisplay.style.transform = "scale("+scale+",-"+scale+") translate(0,-100%)"
     padx = (fitsdisplay.width - fitsdisplay.width*scale) / 2
-    padx = Math.max(0, padx, (wp - fitsdisplay.width*scale)/2)
+    padx = Math.max(0, padx, (innerwidth - fitsdisplay.width*scale)/2)
     pady = (fitsdisplay.height - fitsdisplay.height*scale) / 2
-    pady = Math.max(0, pady, (hp - fitsdisplay.height*scale)/2)
+    pady = Math.max(0, pady, (innerheight - fitsdisplay.height*scale)/2)
     if (sharp.checked && (padx || pady))
         fitsdisplay.style.transform = "translate("+padx+"px,"+pady+"px)" + fitsdisplay.style.transform
 
-    if (!sharp.checked) pady = hp
-    if (!sharp.checked) padx = wp
-
+    if (!sharp.checked) pady = innerheight
+    if (!sharp.checked) padx = innerwidth
+console.log(pc.i, pc.j)
     panTo(pc.i, pc.j)
 }
 
