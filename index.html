@@ -66,6 +66,11 @@ li::marker {
 
 #display_container {
   --zoom: 1;
+  border: 1px solid red;
+  height: 400px;
+  overflow: scroll;
+  resize: both;
+  width: 100%;
 }
 
 #fitsdisplay {
@@ -303,7 +308,7 @@ zoom: <input id="zoomfac" style="width: 7ch" onchange="zoom.value=Math.log2(zoom
 </span>
 <br>
 <span id="displayinfo"></span><br>
-<div id="display_container" style="width: 100%; overflow: scroll; resize: both; height: 400px; border: 1px solid red" tabindex="0"><canvas id='fitsdisplay' height="0"></canvas></div>
+<div id="display_container" tabindex="0"><canvas id='fitsdisplay' height="0"></canvas></div>
 </details>
 
 <script>
@@ -438,14 +443,14 @@ function get_ij(X, Y) {
 }
 
 function scrbar_width() {
-    CS = getComputedStyle(fitsdisplay.parentElement)
+    CS = getComputedStyle(display_container)
     r = {}
     r.bL = parseFloat(CS.borderLeftWidth)     // assuming px
     r.bR = parseFloat(CS.borderRightWidth)
     r.bB = parseFloat(CS.borderBottomWidth)   // assuming px
     r.bT = parseFloat(CS.borderTopWidth)
-    r.scr_width = fitsdisplay.parentElement.getBoundingClientRect().width - fitsdisplay.parentElement.clientWidth - r.bL - r.bR
-    r.scr_height = fitsdisplay.parentElement.getBoundingClientRect().height - fitsdisplay.parentElement.clientHeight - r.bT - r.bB
+    r.scr_width = display_container.getBoundingClientRect().width - display_container.clientWidth - r.bL - r.bR
+    r.scr_height = display_container.getBoundingClientRect().height - display_container.clientHeight - r.bT - r.bB
     return r
 }
 
@@ -453,7 +458,7 @@ function get_icjc() {
     // get image coords at center of view
     r = scrbar_width()
 
-    vp = fitsdisplay.parentElement.getBoundingClientRect()  // "viewport"
+    vp = display_container.getBoundingClientRect()  // "viewport"
     innerwidth = vp.width - r.scr_width - r.bL - r.bR
     innerheight = vp.height - r.scr_height - r.bT - r.bB
     Xc = vp.left + r.bL + innerwidth / 2
@@ -474,12 +479,12 @@ function panTo(i=null, j=null) {
         j = document.getElementById('y_in').value
     }
     r = scrbar_width()
-    vp = fitsdisplay.parentElement.getBoundingClientRect()  // "viewport"
+    vp = display_container.getBoundingClientRect()  // "viewport"
     innerwidth = vp.width - r.scr_width - r.bL - r.bR
     innerheight = vp.height - r.scr_height - r.bT -r.bB
     var x = padx - innerwidth/2 + (i-0.5)*scale
     var y = pady + fitsdisplay.height*scale - innerheight/2 - (j-0.5)*scale
-    fitsdisplay.parentElement.scrollTo(x, y)
+    display_container.scrollTo(x, y)
 }
 
 function do_zoom(){
@@ -490,7 +495,7 @@ function do_zoom(){
     display_container.style.setProperty("--zoom", scale)
 
     r = scrbar_width()
-    vp = fitsdisplay.parentElement.getBoundingClientRect()  // "viewport"
+    vp = display_container.getBoundingClientRect()  // "viewport"
     innerwidth = vp.width - r.scr_width - r.bL - r.bR
     innerheight = vp.height - r.scr_height - r.bT -r.bB
 
