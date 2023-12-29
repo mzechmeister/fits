@@ -376,7 +376,7 @@ function display(a) {
     _func = new Function("z", "let x = norm(z); return " + (func.value || func.placeholder))
 
     var canvas = fitsdisplay;
-    var ctx = canvas.getContext("2d");
+    var ctx = canvas.getContext("2d", {alpha: false});
 
     [canvas.width, canvas.height] = a.dim;
 
@@ -388,7 +388,6 @@ function display(a) {
     // put rgba values
     for (var i=0, j=0; i<data.length; i+=4, ++j) {
         [data[i], data[i+1], data[i+2]] = cm(_func(a[j])).map(x => 0xFF * x);
-        data[i+3] = 0xFF;   // opacity
     }
 
     colgrad = [...Array(100)].map((x, i) => "rgb("+cm(i/100).map(x => x*255).join()+")" ).join()
