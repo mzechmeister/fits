@@ -66,7 +66,6 @@ li::marker {
 
 
 #fitsdisplay {
-    display: block;
     image-rendering: optimizeSpeed;
     image-rendering: -moz-crisp-edges;
     image-rendering: -webkit-optimize-contrast;
@@ -75,6 +74,7 @@ li::marker {
     -ms-interpolation-mode: nearest-neighbor;
     outline: 1px solid #080;  /* border complicates transforms, also 1px yields 0.666 px */
     transform-origin: 0 0;
+    vertical-align: top;
 }
 
 #x, #y {
