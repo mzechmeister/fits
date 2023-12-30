@@ -514,15 +514,15 @@ function scale_update() {
     rng_pmin.style.setProperty('--start', val_pmin.value + '%')
     rng_pmin.style.setProperty('--stop', val_pmax.value + '%')
 
-    zbin = [...Array(100)].map((x,i) => +val_zmin.value + i/100 * (val_zmax.value-val_zmin.value))
+    zbin = [...Array(101)].map((x,i) => +val_zmin.value + i/100 * (val_zmax.value-val_zmin.value))
     //bincdf = [...zbin].map(z => inv_percentile(z))
     var sgn = Math.sign(val_zmax.value - val_zmin.value)
     svg_cdf.innerHTML = ""
     if (sgn!=0) {
-        i = 0; bincdf = (sgn==1 ? zbin : [...zbin].reverse()).map(z => i += Math.max(0, cdf.slice(i).findIndex(x => x >= z)))   // sorted inv_percentile
+        di = i = 0; binpdf = (sgn==1 ? zbin : zbin.toReversed()).map(z => di = Math.max(0, cdf.slice(i+=di).findIndex(x => x >= z)))   // sorted inv_percentile
         zend = val_zmax.value
-        bincdf[100] = i + Math.max(0, cdf.slice(i).findLastIndex(x => x <= zend))   // endpoint inclusive
-        binpdf = bincdf.slice(1).map((x,i) => x-bincdf[i])
+        binpdf[100] += Math.max(0, cdf.slice(i).findLastIndex(x => x <= zend))   // endpoint inclusive
+        binpdf = binpdf.slice(1)
         if (sgn==-1) binpdf.reverse()
         pdfmax = Math.max(...binpdf)
 
