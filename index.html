@@ -357,14 +357,28 @@ async function doit(filename) {
     document.querySelectorAll("li").forEach(x => (x.innerHTML = '<span>'+x.textContent.slice(0,8)+'</span>'+x.textContent.slice(8)))
 }
 
-show = async (ext) => {
+show = async (ext, kwargs={}) => {
     var d = await fitsdata(hdulist, ext);
     d.ext = ext;
     cdf = d.filter(x => !isNaN(x)).sort((a, b) => a>b)
     percentile = p => cdf[Math.round((cdf.length-1)*p/100)]
     inv_percentile = z => 100 * Math.max(cdf.findLastIndex(a => a<z), 0) / (cdf.length-1)
-    val_zmin.value = percentile(val_pmin.value = rng_pmin.value = 1)
-    val_zmax.value = percentile(val_pmax.value = rng_pmax.value = 99)
+
+    if (!("val_pmin" in kwargs))
+        val_pmin.value = 1
+    if (!("val_pmax" in kwargs))
+        val_pmin.value = 99
+
+    if ("val_zmin" in kwargs)
+        val_pmin.value = rng_pmin.value = inv_percentile(val_zmin.value)
+    else
+        val_zmin.value = percentile(rng_pmin.value = val_pmin.value)
+
+    if ("val_zmax" in kwargs)
+        val_pmax.value = rng_pmax.value = inv_percentile(val_zmax.value)
+    else
+        val_zmax.value = percentile(rng_pmax.value = val_pmax.value)
+
     dispdata = d
     dispcontainer.open = true
     fitsdisplay.style.width = "calc(var(--zoom) * "+d.dim[0]+"px)"
@@ -415,7 +429,7 @@ document.getElementById("share").onclick = function(e) {
     e.preventDefault()
     _url = new URL(window.location)
     _url = _url.origin + _url.pathname
-    args = [url, func, zoom, colormap, val_zmin, val_zmax, x_in, y_in].filter(x => x.value).map(x => x.id+"="+x.value)
+    args = [url, func, zoom, colormap, x_in, y_in, val_zmin, val_zmax].filter(x => x.value).map(x => x.id+"="+x.value)
     ext = hduinfo.querySelector("details[open]")
     if (ext) args.push("ext="+ext.id.slice(4))
     if (dispdata) args.push("disp="+dispdata.ext)
@@ -578,7 +592,7 @@ for (var key in url_kwargs) {
 doit(url.value).then(async e => {
    if (ext=url_kwargs['ext']) document.querySelector("#tab_"+ext).open = true
    if (disp=url_kwargs['disp'])
-      show(disp)
+      show(disp, url_kwargs)
    if (plotext=url_kwargs['plot'])
       fitsplot(plotext)
 })
