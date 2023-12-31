@@ -219,11 +219,11 @@ summary:hover {
   top: 0;
 }
 
-#val_pmax, #val_pmin, #val_zmax, #val_zmin {
+#pmax, #pmin, #zmax, #zmin {
   width: 10ch;
 }
 
-#val_pmax, #val_pmin {
+#pmax, #pmin {
   margin-right: -2ch;  /* percentage unit */
   padding: 0 2ch 0 0;
   width: 6ch;
@@ -233,7 +233,7 @@ input[type="number"] {
   text-align: right;
 }
 
-#val_pmin + span {
+#pmin + span {
   width: 2ch;
   display: inline-block;
   text-align: left;
@@ -275,12 +275,12 @@ th {
 <table style="text-align: left;display: inline-block;">
   <tr>
     <th>colfunc: <input id="func" placeholder="x">
-    <th style="text-align: right"><input type="number" id="val_pmin" title="lower percentile" min=0 max=100><span>%</span>
+    <th style="text-align: right"><input type="number" id="pmin" title="lower percentile" min=0 max=100><span>%</span>
     <th><div class="slider" style="position: relative; width: 200px;">
         <input type="range" id="rng_pmin" title="lower percentile">
         <input type="range" id="rng_pmax" title="upper percentile">
       </div>
-    <th><input type="number" id="val_pmax" title="upper percentile" min=0 max=100>%
+    <th><input type="number" id="pmax" title="upper percentile" min=0 max=100>%
   </tr>
   <tr>
   <th><label>color map:</label> <select id="colormap" onchange="redraw()">
@@ -288,10 +288,10 @@ th {
 <option>grey</option>
 <option>bb</option>
 </select>
-  <th style="text-align: right"><input type="number" id="val_zmin" title="lower percentile">
+  <th style="text-align: right"><input type="number" id="zmin" title="lower percentile">
   <th><svg id="svg_cdf" height="20" width="200" style="border: 1px solid #999; transform: scaleY(-1);"></svg><br>
   <div id="colorbar" style="height: 20px; width: 200px; border: 1px solid #999;"></div>
-  <th><input type="number" id="val_zmax" title="upper percentile">
+  <th><input type="number" id="zmax" title="upper percentile">
   </tr>
 </table>
 
@@ -364,20 +364,20 @@ show = async (ext, kwargs={}) => {
     percentile = p => cdf[Math.round((cdf.length-1)*p/100)]
     inv_percentile = z => 100 * Math.max(cdf.findLastIndex(a => a<z), 0) / (cdf.length-1)
 
-    if (!("val_pmin" in kwargs))
-        val_pmin.value = 1
-    if (!("val_pmax" in kwargs))
-        val_pmin.value = 99
+    if (!("pmin" in kwargs))
+        pmin.value = 1
+    if (!("pmax" in kwargs))
+        pmax.value = 99
 
-    if ("val_zmin" in kwargs)
-        val_pmin.value = rng_pmin.value = inv_percentile(val_zmin.value)
+    if ("zmin" in kwargs)
+        pmin.value = rng_pmin.value = inv_percentile(zmin.value)
     else
-        val_zmin.value = percentile(rng_pmin.value = val_pmin.value)
+        zmin.value = percentile(rng_pmin.value = pmin.value)
 
-    if ("val_zmax" in kwargs)
-        val_pmax.value = rng_pmax.value = inv_percentile(val_zmax.value)
+    if ("zmax" in kwargs)
+        pmax.value = rng_pmax.value = inv_percentile(zmax.value)
     else
-        val_zmax.value = percentile(rng_pmax.value = val_pmax.value)
+        zmax.value = percentile(rng_pmax.value = pmax.value)
 
     dispdata = d
     dispcontainer.open = true
@@ -396,7 +396,7 @@ function display(a) {
     if (!a) {console.log('No data to display.'); return}
     scale_update()
 
-    norm = new Function("z", `return (z-(${val_zmin.value})) / (${val_zmax.value}-(${val_zmin.value}))`)
+    norm = new Function("z", `return (z-(${zmin.value})) / (${zmax.value}-(${zmin.value}))`)
     _func = new Function("z", "let x = norm(z); return " + (func.value || func.placeholder))
 
     var canvas = fitsdisplay;
@@ -429,7 +429,7 @@ document.getElementById("share").onclick = function(e) {
     e.preventDefault()
     _url = new URL(window.location)
     _url = _url.origin + _url.pathname
-    args = [url, func, zoom, colormap, x_in, y_in, val_zmin, val_zmax].filter(x => x.value).map(x => x.id+"="+x.value)
+    args = [url, func, zoom, colormap, x_in, y_in, zmin, zmax].filter(x => x.value).map(x => x.id+"="+x.value)
     ext = hduinfo.querySelector("details[open]")
     if (ext) args.push("ext="+ext.id.slice(4))
     if (dispdata) args.push("disp="+dispdata.ext)
@@ -524,16 +524,16 @@ function do_zoom() {
 }
 
 function scale_update() {
-    rng_pmin.style.setProperty('--start', val_pmin.value + '%')
-    rng_pmin.style.setProperty('--stop', val_pmax.value + '%')
+    rng_pmin.style.setProperty('--start', pmin.value + '%')
+    rng_pmin.style.setProperty('--stop', pmax.value + '%')
 
-    zbin = [...Array(101)].map((x,i) => +val_zmin.value + i/100 * (val_zmax.value-val_zmin.value))
+    zbin = [...Array(101)].map((x,i) => +zmin.value + i/100 * (zmax.value-zmin.value))
     //bincdf = [...zbin].map(z => inv_percentile(z))
-    var sgn = Math.sign(val_zmax.value - val_zmin.value)
+    var sgn = Math.sign(zmax.value - zmin.value)
     svg_cdf.innerHTML = ""
     if (sgn!=0) {
         di = i = 0; binpdf = (sgn==1 ? zbin : zbin.toReversed()).map(z => di = Math.max(0, cdf.slice(i+=di).findIndex(x => x >= z)))   // sorted inv_percentile
-        zend = val_zmax.value
+        zend = zmax.value
         binpdf[100] += Math.max(0, cdf.slice(i).findLastIndex(x => x <= zend))   // endpoint inclusive
         binpdf = binpdf.slice(1)
         if (sgn==-1) binpdf.reverse()
@@ -555,8 +555,8 @@ function sync(A, B, Z) {
     Z.addEventListener("change", () => {A.value = B.value = inv_percentile(+Z.value); redraw()} )   /* a binary search might be more efficient */
 }
 
-sync(rng_pmin, val_pmin, val_zmin)
-sync(rng_pmax, val_pmax, val_zmax)
+sync(rng_pmin, pmin, zmin)
+sync(rng_pmax, pmax, zmax)
 
 func.onchange = redraw
 zoom.oninput = do_zoom
