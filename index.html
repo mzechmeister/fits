@@ -90,6 +90,10 @@ li::marker {
   width: 10ch;
 }
 
+.colnames {
+  cursor: default;
+}
+
 .colname {
   background: lightgrey;
   padding: 0px 2px;
@@ -272,7 +276,7 @@ th {
 <details id="dispcontainer">
 <summary>display</summary>
 
-<table style="text-align: left;display: inline-block;">
+<table style="text-align: left; display: inline-block;">
   <tr>
     <th>colfunc: <input id="func" placeholder="x">
     <th style="text-align: right"><input type="number" id="pmin" title="lower percentile" min=0 max=100><span>%</span>
@@ -345,9 +349,10 @@ async function doit(filename) {
         var dim = hdu.dim.join('<span style="padding: 1px;">&times;</span>')
         if (dim) dim = ", " + dim
         var but = hdu.cols ? ['fitsplot('+k+')', 'plot'] : hdu.dim.length ? ['show('+k+')', 'display'] : ''
-        if (but) but = ` <button onclick="${but[0]}; return false">${but[1]}</button>`
+        if (but) but = `<button onclick="${but[0]}; return false">${but[1]}</button>`
         var colnames = ''
         if (hdu.cols) for (col of hdu.cols) colnames += ' <span class="colname">'+col.name+'</span>'
+        if (colnames) colnames = '<span class="colnames">'+colnames+'</span>'
         var summary = `${icon} ${k} [${extname}${dim}] ${colnames} ${but}`
         hduinfo.innerHTML += '<details id="tab_'+k+'"><summary>'+ summary + '</summary>' +
             ' <ol><li>'+hdu.cards.join("\n<li>")+'</ol>' +
