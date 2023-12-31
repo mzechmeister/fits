@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>fits reader</title>
+<title>fits viewer</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 <script src='fits.js'></script>
 
@@ -9,7 +9,6 @@
 body {
   font-size: smaller;
 }
-
 
 ol {
   width: 80ch;
@@ -487,7 +486,7 @@ function panTo(i=null, j=null) {
     display_container.scrollTo(x, y)
 }
 
-function do_zoom(){
+function do_zoom() {
     // zoom to center as fallback
     pc = scale == null ?  {i: fitsdisplay.width/2+0.5, j: fitsdisplay.height/2+0.5} : get_icjc()
     scale = 2**zoom.value
@@ -536,7 +535,6 @@ function scale_update() {
     }
 }
 
-
 function sync(A, B, Z) {
     A.addEventListener("input",  () => {Z.value = percentile(B.value = A.value); redraw()} )
     B.addEventListener("change", () => {Z.value = percentile(A.value = B.value); redraw()} )
@@ -567,7 +565,6 @@ fitsdisplay.onmousemove = e => {
 }
 
 
-
 url_kwargs = Object.fromEntries(new URL(window.location).searchParams)
 
 for (var key in url_kwargs) {
@@ -580,12 +577,10 @@ for (var key in url_kwargs) {
 
 doit(url.value).then(async e => {
    if (ext=url_kwargs['ext']) document.querySelector("#tab_"+ext).open = true
-   if (disp=url_kwargs['disp']) {
+   if (disp=url_kwargs['disp'])
       show(disp)
-   }
-   if (plotext=url_kwargs['plot']) {
+   if (plotext=url_kwargs['plot'])
       fitsplot(plotext)
-   }
 })
 
 </script>
