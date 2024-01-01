@@ -352,7 +352,7 @@ async function doit(filename) {
         if (but) but = `<button onclick="${but[0]}; return false">${but[1]}</button>`
         var colnames = ''
         if (hdu.cols) for (col of hdu.cols) colnames += ' <span class="colname">'+col.name+'</span>'
-        if (colnames) colnames = '<span class="colnames">'+colnames+'</span>'
+        if (colnames) colnames = '<span class="colnames">' + colnames + '</span>'
         var summary = `${icon} ${k} [${extname}${dim}] ${colnames} ${but}`
         hduinfo.innerHTML += '<details id="tab_'+k+'"><summary>'+ summary + '</summary>' +
             ' <ol><li>'+hdu.cards.join("\n<li>")+'</ol>' +
@@ -566,9 +566,11 @@ sync(rng_pmax, pmax, zmax)
 func.onchange = redraw
 zoom.oninput = do_zoom
 
-document.body.onkeydown = e => {
+document.body.onkeyup = e => {
     if (e.key == "+") {++zoom.value; do_zoom()}
     else if (e.key == "-") {--zoom.value; do_zoom()}
+    // unzoom
+    else if (e.key == "u") {zoom.value = Math.floor(Math.log2(Math.min(display_container.clientWidth / fitsdisplay.width, display_container.clientHeight / fitsdisplay.height))); do_zoom(); panTo(fitsdisplay.width/2+0.5, fitsdisplay.height/2+0.5)}
 }
 
 fitsdisplay.onclick = e => {
