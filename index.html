@@ -562,7 +562,7 @@ sync(rng_pmin, pmin, zmin)
 sync(rng_pmax, pmax, zmax)
 
 func.onchange = redraw
-zoom.oninput = do_zoom
+zoom.oninput = e => do_zoom()
 
 document.body.onkeyup = e => {
     if (e.key == "+") {++zoom.value; do_zoom()}
