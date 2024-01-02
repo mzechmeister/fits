@@ -367,7 +367,7 @@ show = async (ext, kwargs={}) => {
     d.ext = ext;
     cdf = d.filter(x => !isNaN(x)).sort((a, b) => a>b)
     percentile = p => cdf[Math.round((cdf.length-1)*p/100)]
-    inv_percentile = z => 100 * Math.max(cdf.findLastIndex(a => a<z), 0) / (cdf.length-1)
+    inv_percentile = z => {p = cdf.findIndex(a => a>=z) / (cdf.length-1); return 100*(p<0?1:p)}
 
     if (!("pmin" in kwargs))
         pmin.value = 1
