@@ -537,9 +537,9 @@ function scale_update() {
     var sgn = Math.sign(zmax.value - zmin.value)
     svg_cdf.innerHTML = ""
     if (sgn!=0) {
-        di = i = 0; binpdf = (sgn==1 ? zbin : zbin.toReversed()).map(z => di = Math.max(0, cdf.slice(i+=di).findIndex(x => x >= z)))   // sorted inv_percentile
-        zend = zmax.value
-        binpdf[100] += Math.max(0, cdf.slice(i).findLastIndex(x => x <= zend))   // endpoint inclusive
+        di = i = 0; binpdf = (sgn==1 ? zbin : zbin.toReversed()).map(z => {if (di<0) return 0; di = cdf.slice(i+=di).findIndex(x => x >= z); return di<0?1:di})   // sorted inv_percentile
+        zend = +zmax.value
+        if (di>-1) binpdf[100] += 1 + cdf.slice(i).findLastIndex(x => x <= zend)   // endpoint inclusive
         binpdf = binpdf.slice(1)
         if (sgn==-1) binpdf.reverse()
         pdfmax = Math.max(...binpdf)
