@@ -407,6 +407,7 @@ function display(a) {
     var canvas = fitsdisplay;
     var ctx = canvas.getContext("2d", {alpha: false});
 
+    if (!a.dim[1]) a.dim[1] = 1;
     [canvas.width, canvas.height] = a.dim;
 
     // get the imageData and pixel array from the canvas
