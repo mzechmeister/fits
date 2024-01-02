@@ -389,7 +389,9 @@ show = async (ext, kwargs={}) => {
     fitsdisplay.style.width = "calc(var(--zoom) * "+d.dim[0]+"px)"
 
     display(dispdata)
-    do_zoom()
+    pc = ("x_in" in kwargs) ? {i: x_in.value, j: y_in.value} : {i: fitsdisplay.width/2+0.5, j: fitsdisplay.height/2+0.5}
+    do_zoom(pc)
+
 }
 
 // colormaps
@@ -492,11 +494,7 @@ function z(i, j) {
 
 scale = null
 
-function panTo(i=null, j=null) {
-    if (i===null) {
-        i = document.getElementById('x_in').value
-        j = document.getElementById('y_in').value
-    }
+function panTo(i=x_in.value, j=y_in.value) {
     r = scrbar_width()
     vp = display_container.getBoundingClientRect()  // "viewport"
     innerwidth = vp.width - r.scr_width - r.bL - r.bR
@@ -506,9 +504,8 @@ function panTo(i=null, j=null) {
     display_container.scrollTo(x, y)
 }
 
-function do_zoom() {
+function do_zoom(pc=get_icjc()) {
     // zoom to center as fallback
-    pc = scale == null ?  {i: fitsdisplay.width/2+0.5, j: fitsdisplay.height/2+0.5} : get_icjc()
     scale = 2**zoom.value
     zoomfac.value = scale < 1 ? '1/'+(+(1/scale).toFixed(3)) : +scale.toFixed(3)
     display_container.style.setProperty("--zoom", scale)
