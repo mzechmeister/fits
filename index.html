@@ -532,8 +532,7 @@ function do_zoom(pc=get_icjc()) {
 }
 
 function locked_zoom() {
-    scale_y *= 2**zoom.value / scale
-    if (zoomyfac.value) zoomyfac.value = scale_y
+    if (zoomyfac.value) zoomyfac.value *= 2**zoom.value / scale
     do_zoom()
 }
 
