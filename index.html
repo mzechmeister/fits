@@ -303,7 +303,7 @@ th {
 <br>
 x: <input id="x_in" type="number" onchange="panTo()"> y: <input id="y_in" type="number" onchange="panTo()"><span id="coords"></span> <input type="button" id="center" value="center" onclick="panTo(fitsdisplay.width/2+0.5, fitsdisplay.height/2+0.5)">
 
-zoom: <input id="zoomfac" style="width: 7ch" onchange="zoom.value=Math.log2(zoomfac.value) ; zoom.oninput()"><input id="zoomyfac" style="width: 7ch" onchange="zoom.oninput()" value=1>  <input type="range" id="zoom" min="-6" max="6" step="0.5">
+zoom: <input id="zoomfac" style="width: 7ch" onchange="zoom.value=Math.log2(zoomfac.value); zoom.oninput()"><input id="zoomyfac" style="width: 7ch" onchange="do_zoom()">  <input type="range" id="zoom" min="-6" max="6" step="0.5">
 <input id="sharp" type="checkbox"><label for="sharp">sharp</label>
 <input id="fullscreen" type="checkbox">
 <span id="modebar">
@@ -510,7 +510,7 @@ function panTo(i=x_in.value, j=y_in.value) {
 function do_zoom(pc=get_icjc()) {
     // zoom to center as fallback
     scale = 2**zoom.value
-    scale_y = +zoomyfac.value
+    scale_y = zoomyfac.value>0 ? +zoomyfac.value : scale
     zoomfac.value = scale < 1 ? '1/'+(+(1/scale).toFixed(3)) : +scale.toFixed(3)
     display_container.style.setProperty("--zoom", scale)
     display_container.style.setProperty("--zoomy", scale_y)
@@ -529,6 +529,12 @@ function do_zoom(pc=get_icjc()) {
     fitsdisplay.style.margin = `${pady}px ${padx}px`
 
     panTo(pc.i, pc.j)
+}
+
+function locked_zoom() {
+    scale_y *= 2**zoom.value / scale
+    if (zoomyfac.value) zoomyfac.value = scale_y
+    do_zoom()
 }
 
 function scale_update() {
@@ -567,7 +573,7 @@ sync(rng_pmin, pmin, zmin)
 sync(rng_pmax, pmax, zmax)
 
 func.onchange = redraw
-zoom.oninput = e => do_zoom()
+zoom.oninput = locked_zoom
 
 document.body.onkeyup = e => {
     if (e.key == "+") {++zoom.value; do_zoom()}
