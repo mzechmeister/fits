@@ -506,10 +506,18 @@ function panTo(i=x_in.value, j=y_in.value) {
     var x = padx - innerwidth/2 + (i-0.5)*scale
     var y = pady + fitsdisplay.height*scale_y - innerheight/2 - (j-0.5)*scale_y
     display_container.scrollTo(x, y)
+    // memorise integer scroll position for later scroll checks as well as the more precise coordinates
+    display_container.panLast = {i:i, j:j, left: display_container.scrollLeft, top: display_container.scrollTop}
 }
 
 function do_zoom(pc=get_icjc()) {
     // zoom to center as fallback
+
+    if (display_container.panLast
+           && display_container.panLast.left == display_container.scrollLeft
+           && display_container.panLast.top == display_container.scrollTop)
+        pc = display_container.panLast
+
     scale = 2**zoom.value
     scale_y = zoomyfac.value>0 ? +zoomyfac.value : scale
     zoomfac.value = scale < 1 ? '1/'+(+(1/scale).toFixed(3)) : +scale.toFixed(3)
