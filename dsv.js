@@ -2,15 +2,21 @@ document.write('<script src="fits.js"></script>');
 
 async function dsv(file, ...args) {
     if (typeof file == "string") {
+        filename = file;
         // nothing needed if file is instanceof File
         [file, ext] = file.split(/[\[\]]/)
         var hdulist = await fitsopen(file);
+    }
+    else {
+       hdulist = file
+       ext = hdulist.ext
+       filename = hdulist.file.name
     }
  
     var responseText = await fitsdata(hdulist, ext)
     if (!file.ok) console.log(file.statusText, "("+file.url+")")
     if (responseText[0]) {
-        responseText.__proto__._url = file //.name || file.url
+        responseText.__proto__._url = filename //|| file.url
         text_to_table(responseText, ...args)
     }
 }

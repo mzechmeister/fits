@@ -321,7 +321,22 @@ function fitsplot(ext=0) {
     var url = hdulist[0].filename + "[" + ext + "]"
     plotcontainer.open = true
     plotcontainer.ext = ext
-    fitsgraph.src = "csv_plotter.htm?url=" + url + "&cx=$0&cy=$1&title=" + obj
+
+    if (hdulist.file instanceof File) {
+        url = ""
+        hdulist.ext = ext
+        fitsgraph.onload = null
+
+        sent_data = () => fitsgraph.contentWindow.postMessage(hdulist, window.location.origin+window.location.pathname)
+        if (fitsgraph.src)
+            sent_data()
+        else {
+            fitsgraph.src = "csv_plotter.htm?url=" + url + "&cx=$0&cy=$1&title=" + obj
+            fitsgraph.onload = sent_data
+        }
+    } else {
+        fitsgraph.src = "csv_plotter.htm?url=" + url + "&cx=$0&cy=$1&title=" + obj
+    }
 }
 
 async function doit(filename) {

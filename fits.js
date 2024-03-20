@@ -79,6 +79,7 @@ function cards2hdr(cards) {
 
 async function fitsopen(file, prefetch=true) {
     hdulist = []
+    hdulist.file = file
     hdu = {extend: 0}
     var k = 0
 
