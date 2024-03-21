@@ -93,6 +93,7 @@ li::marker {
 
 .colnames {
   cursor: default;
+  background: white;
 }
 
 .colname {
@@ -121,7 +122,7 @@ details * {
 
 summary {
   cursor: pointer;
-  width: fit-content;
+  display: inline list-item;
 }
 
 summary:hover {
@@ -129,9 +130,23 @@ summary:hover {
 }
 
 #hduinfo button {
+  border: none;
+  background: white;
   float: right;
   font-size: smaller;
+  margin: 0px 0px;
   padding: 0px 1ch;
+}
+
+#hduinfo button i {
+  color: dodgerblue;
+  font-size: large;
+  opacity: 0.7;
+}
+
+#hduinfo button i:hover {
+  cursor: pointer;
+  opacity: 1;
 }
 
 .loading::before {
@@ -365,8 +380,8 @@ async function doit(filename) {
         icon = `<i class="${icon}"></i>`
         var dim = hdu.dim.join('<span style="padding: 1px;">&times;</span>')
         if (dim) dim = ", " + dim
-        var but = hdu.cols ? ['fitsplot('+k+')', 'plot'] : hdu.dim.length ? ['show('+k+')', 'display'] : ''
-        if (but) but = `<button onclick="${but[0]}; return false">${but[1]}</button>`
+        var but = hdu.cols ? ['fitsplot('+k+')', 'fas fa-chart-line'] : hdu.dim.length ? ['show('+k+')', 'fab fa-instagram'] : ''
+        if (but) but = `<button onclick="${but[0]}; return false"><i class="${but[1]}"></i></button>`
         var colnames = ''
         if (hdu.cols) for (col of hdu.cols) colnames += ' <span class="colname">'+col.name+(col.fmtrep > 1? " &times;"+col.fmtrep: "")+'</span>'
         if (colnames) colnames = '<span class="colnames">' + colnames + '</span>'
