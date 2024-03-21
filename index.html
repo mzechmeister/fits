@@ -368,7 +368,7 @@ async function doit(filename) {
         var but = hdu.cols ? ['fitsplot('+k+')', 'plot'] : hdu.dim.length ? ['show('+k+')', 'display'] : ''
         if (but) but = `<button onclick="${but[0]}; return false">${but[1]}</button>`
         var colnames = ''
-        if (hdu.cols) for (col of hdu.cols) colnames += ' <span class="colname">'+col.name+'</span>'
+        if (hdu.cols) for (col of hdu.cols) colnames += ' <span class="colname">'+col.name+(col.fmtrep > 1? " &times;"+col.fmtrep: "")+'</span>'
         if (colnames) colnames = '<span class="colnames">' + colnames + '</span>'
         var summary = `${icon} ${k} [${extname}${dim}] ${colnames} ${but}`
         hduinfo.innerHTML += '<details id="tab_'+k+'"><summary>'+ summary + '</summary>' +
