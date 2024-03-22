@@ -132,15 +132,18 @@ summary:hover {
 #hduinfo button {
   border: none;
   background: white;
-  float: right;
-  font-size: smaller;
   margin: 0px 0px;
+  padding: 0px;
+}
+
+#hduinfo summary > button {
+  float: right;
+  font-size: larger;
   padding: 0px 1ch;
 }
 
 #hduinfo button i {
   color: dodgerblue;
-  font-size: large;
   opacity: 0.7;
 }
 
@@ -383,7 +386,10 @@ async function doit(filename) {
         var but = hdu.cols ? ['fitsplot('+k+')', 'fas fa-chart-line'] : hdu.dim.length ? ['show('+k+')', 'fab fa-instagram'] : ''
         if (but) but = `<button onclick="${but[0]}; return false"><i class="${but[1]}"></i></button>`
         var colnames = ''
-        if (hdu.cols) for (col of hdu.cols) colnames += ' <span class="colname">'+col.name+(col.fmtrep > 1? " &times;"+col.fmtrep: "")+'</span>'
+        if (hdu.cols) for (col of hdu.cols) {
+            colnames += ' <span class="colname">'+col.name+(col.fmtrep > 1? " &times;"+col.fmtrep: "")+'</span>'
+            if (col.fmtrep > 1) colnames += `<button onclick="show(${k}, {colname: '${col.name}'}); return false"><i class="fab fa-instagram"></i></button>`
+        }
         if (colnames) colnames = '<span class="colnames">' + colnames + '</span>'
         var summary = `${icon} ${k} [${extname}${dim}] ${colnames} ${but}`
         hduinfo.innerHTML += '<details id="tab_'+k+'"><summary>'+ summary + '</summary>' +
@@ -395,7 +401,14 @@ async function doit(filename) {
 }
 
 show = async (ext, kwargs={}) => {
+    var {colname, ...kwargs} = kwargs
     var d = await fitsdata(hdulist, ext);
+    if (colname) {
+        d = d[colname]
+        dim = [d[0].length, d.length]
+        d = d.flat()
+        d.dim = dim
+    }
     d.ext = ext;
     cdf = d.filter(x => !isNaN(x)).sort((a, b) => a>b)
     percentile = p => cdf[Math.round((cdf.length-1)*p/100)]
