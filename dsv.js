@@ -16,8 +16,20 @@ async function dsv(file, ...args) {
     var responseText = await fitsdata(hdulist, ext)
     if (!file.ok) console.log(file.statusText, "("+file.url+")")
     if (responseText[0]) {
-        responseText.__proto__._url = filename //|| file.url
-        text_to_table(responseText, ...args)
+        // flattening arrays in bintable columns, append a number as suffix
+        d = []
+        for (col of responseText) {
+            if (col[0].length) {
+                for ([k,coli] of col.entries()) {
+                    colname = col.name + '_' + k
+                    d.push(d[colname] = coli)
+                    d[colname].name = colname
+                }
+            } else
+                 d.push(d[col.name] = col)
+        }
+        d.__proto__._url = filename //|| file.url
+        text_to_table(d, ...args)
     }
 }
 
