@@ -116,6 +116,7 @@ details {
   padding-left: 2ch;
   pointer-events: none;
   position: relative;
+  transform: rotate(0deg);  /* needed for sticky */
 }
 
 details * {
@@ -125,6 +126,9 @@ details * {
 summary {
   cursor: pointer;
   display: inline list-item;
+  position: sticky;
+  top: 0.2em;
+  background: #FFFC;
 }
 
 summary:hover {
@@ -140,7 +144,8 @@ summary::before {
   content: "▶";
   height: 100%;
   left: 0px;
-  position: absolute;
+  position: fixed;
+  top: 0;
   width: 2ch;
 }
 
