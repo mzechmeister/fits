@@ -113,7 +113,9 @@ li::marker {
 
 details {
   clear: both;   /* float button the very end in every row */
+  padding-left: 2ch;
   pointer-events: none;
+  position: relative;
 }
 
 details * {
@@ -127,6 +129,23 @@ summary {
 
 summary:hover {
   background: #eef;
+}
+
+summary::marker {
+  content: "";
+}
+
+summary::before {
+  background: linear-gradient( rgba(30, 144, 255, 0.7), rgba(30, 144, 255, 0.2));
+  content: "▶";
+  height: 100%;
+  left: 0px;
+  position: absolute;
+  width: 2ch;
+}
+
+[open] > summary:before {
+  content: "▼";
 }
 
 #hduinfo button {
