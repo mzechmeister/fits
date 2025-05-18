@@ -369,7 +369,7 @@
 <div id="tawrapper" style="position: relative">
 <div id="Traces" class="fancy wrap" style="background: white; margin: 5px 0;">
    <div class="Trace" contenteditable tnum=1>
-      <span class="plotypicon"><image src="https://raw.githubusercontent.com/plotly/plotly-icons/master/src/svg/plot-scatter.svg"></span>
+      <span class="plotypicon"><img src="https://raw.githubusercontent.com/plotly/plotly-icons/master/src/svg/plot-scatter.svg"></span>
       <span class="dropparent"><label><i class="far fa-file" title="file/url" onclick="csvFileInput.click()"></i></label><span id="url" class="dropcell">
       </span><input id="csvFileInput" type="file" style="display:none" onchange="url_kwargs['url'] = '['+this.files[0].name+']'; dsv(this.files[0], init)"></span>
       <span class="dropparent"><label><label class="fa-x" title="x values"></label></label><span id="cx" class="dropcell" placeholder="x" onchange="select_columns()"></span></span>
@@ -384,7 +384,7 @@
       <span class="dropparent"><label><i class="fa fa-filter" title="filter"></i></label><span id="filt" class="dropcell filter" placeholder="filter" onchange="select_columns()"></span></span>
    </div>
    <div class="Trace" contenteditable tnum=2>
-      <span class="plotypicon"><image src="https://raw.githubusercontent.com/plotly/plotly-icons/master/src/svg/plot-line.svg" class="plotypicon"></span>
+      <span class="plotypicon"><img src="https://raw.githubusercontent.com/plotly/plotly-icons/master/src/svg/plot-line.svg" class="plotypicon"></span>
       <span class="dropparent"><label><i class="fa fa-calculator" title="function"></i></label><span id="funcf" class="dropcell func" onchange="empty_func(); draw_func()" placeholder="[::] f(x)  or  x(t), y(t)"></span></span>
       <span class="dropparent"><label><i class="fa fa-tint" title="color"></i></label><span type="search" id="funcc" class="dropcell color rgb" placeholder="color" onchange="empty_func(); draw_func()"></span></span>
       <span class="dropparent"><label><i class="fa fa-adjust" title="opacity"></i></label><span id="funco" class="dropcell opacity" onchange="empty_func(); draw_func()">0.5</span></span>
@@ -398,7 +398,7 @@
 <span id="suggest_div" contentEditable=False style="position: absolute; transform: translate(0%, -100%); max-height: 200px; overflow-y: auto; overflow-x: hidden; border: 1px solid #ccc"><ul id="suggest_list" style="padding: 0; margin: 0; width: 100%; background: #fffc;"></ul></span>
 
 
-<script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
+<script src='https://cdn.plot.ly/plotly-3.0.1.min.js'></script>
 <script src='dsv.js'></script>
 <script src='zoom_pan.js'></script>
 <script src="https://unpkg.com/mathjs/lib/browser/math.js"></script>
@@ -485,27 +485,29 @@ function parseColor(f) {
 function update_errorbar(tnum=1) {
     // back to d3, since Plotly cannot make variable colors for errorbars
     // also opacity for errorbars was depreciated
-    if (!webgl.indeterminate && webgl.checked) return   // does not works for gl (only svg)
+    let tclass = "trace" + graph._fullLayout._traceUids[tnum-1]   // "trace1af3d7"
+    let trace1 = graph.getElementsByClassName(tclass)[0]
+    if (!trace1) return   // does not works for gl (only svg)
+
     let f = document.getElementsByClassName("color")[tnum-1]
     let rgb = parseColor(f)
     let opacity = parseCell(f.parentNode.nextElementSibling.lastChild)
 
-    let tclass = ".trace" + graph._fullLayout._traceUids[tnum-1]   // "trace1af3d7"
-    let xerr = Plotly.d3.selectAll('.xerror')
-    let yerr = Plotly.d3.selectAll('.yerror')
+    let xerr = trace1.querySelectorAll('.xerror')
+    let yerr = trace1.querySelectorAll('.yerror')
     if (rgb.pop) {
         // get colors from data points
-        rgbs = Plotly.d3.selectAll('.points .point').data().map(d => d.mcc)
+        rgbs = [...trace1.querySelectorAll('.points .point')].map(x => x.style.fill)
 
         // apply colors to errorbars
-        xerr.style('stroke', (d,i) => rgbs[i])
-        yerr.style('stroke', (d,i) => rgbs[i])
+        xerr.forEach((x,i) => x.style['stroke'] = rgbs[i])
+        yerr.forEach((x,i) => x.style['stroke'] = rgbs[i])
     }
     if (opacity.pop) {
-        xerr.style("stroke-opacity", (d,i) => opacity[i])
-        yerr.style("stroke-opacity", (d,i) => opacity[i])
+        xerr.forEach((x,i) => x.style['stroke-opacity'] = opacity[i])
+        yerr.forEach((x,i) => x.style['stroke-opacity'] = opacity[i])
     } else   // also fixed opacity needs to be updated, since deprecated in plotly
-        Plotly.d3.selectAll(tclass+" .xerror,.yerror").style("stroke-opacity", opacity)
+        trace1.querySelectorAll('.xerror,.yerror').forEach(x => x.style['stroke-opacity'] = opacity)
 }
 
 function colorRestyle(f) {
@@ -527,7 +529,7 @@ divcols = document.getElementById('colornames')
 divcols.onmouseenter = (_ => add_drop(".color"))
 divcols.onmouseleave = remove_drag
 
-for (color of Plotly.d3.scale.category10().range()) {
+for (color of Plotly.PlotSchema.get().layout.layoutAttributes.colorway.dflt) {  // get category10 colors
     let div = document.createElement('div')
     div.style['background-color'] = color
     div.draggable = true
@@ -538,9 +540,9 @@ for (color of Plotly.d3.scale.category10().range()) {
         if (rgb.startsWith('rgb')) rgb = '#' + rgb.slice(4,-1).split(',').map(x => (+x).toString(16).padStart(2,0)).join('')
     })
     div.onmouseup = (e => {
-        // send color as click
+        // send color at click
         f = closest(sel.focusNode, ".dropcell.color")
-            || closest(getPoint(sel.focusNode)[0], ".dropcell.color")
+            || closest(getPoint(ta.selectionStart)[0], ".dropcell.color")
         if (f) {
             prev_sel = getNodePos(f)
             taInsert(rgb, prev_sel[0], prev_sel[1]-1)
@@ -715,7 +717,7 @@ function parseCell(cell) {
                 argi = {}
                 for (k of knums) {
                     d = data[k][i]
-                    argi["$"+k] = d=="undefined" || d===""? NaN : d  // NaNs for Mathjs
+                    argi["$"+k] = [undefined, "", "nan"].includes(d) ? NaN : d  // NaNs for Mathjs
                 }
                 return expr2(argi)
             })
@@ -740,7 +742,7 @@ function using_columns() {
     select_columns()
 }
 
-function select_columns() {
+function select_columns(opt) {
     args = {
         x : parseCell(document.getElementById("cx")),
         y : parseCell(document.getElementById("cy")),
@@ -755,7 +757,7 @@ function select_columns() {
     }
 
     //document.getElementById("using").innerText = x + ":" + y + ":" + ct + ":" + ds
-    plot_data(data, args)
+    plot_data(data, args, opt)
     return true
 }
 
@@ -848,7 +850,7 @@ function draw_func() {
 
 glmin = 500   // Threshold for number of points to toggle automatically between gl and svg
 
-function plot_data(data, {x, y, de_x, de_y, dt, ct, ds, pt, cc, Do, filt}) {
+function plot_data(data, {x, y, de_x, de_y, dt, ct, ds, pt, cc, Do, filt}, opt=[]) {
 
     if (filt) {
         // filter only data with criteria filt
@@ -918,6 +920,9 @@ function plot_data(data, {x, y, de_x, de_y, dt, ct, ds, pt, cc, Do, filt}) {
         margin: {l: 50, r: 10, b: 40, t: 30},
         showlegend: [null, false, true][cblegend.state]
     }
+    if (opt.includes('xlog')) layout['xaxis'].type = 'log'
+    if (opt.includes('ylog')) layout['yaxis'].type = 'log'
+
     // Plotly.plot('plotly-div', {
     Plotly.newPlot('plotly-div', {
         data: traces,
@@ -940,7 +945,7 @@ function plot_data(data, {x, y, de_x, de_y, dt, ct, ds, pt, cc, Do, filt}) {
 
     draw_func()
     update_errorbar()   // to render ealier the errorbars
-    zoompan()
+    plotlyEnableZoomPan(graph)
 
     graph.on('plotly_click', function(data) {
         let pts = ''
@@ -1046,6 +1051,12 @@ function init() {
     cbtitle = url_kwargs.cbtitle || ""
     delete url_kwargs.cbtitle
 
+    opt = []
+    if ('xlog' in url_kwargs) opt.push('xlog')
+    delete url_kwargs.xlog
+    if ('ylog' in url_kwargs) opt.push('ylog')
+    delete url_kwargs.ylog
+
     for (arg in url_kwargs) {
         t = document.getElementById(arg)
         t.innerHTML = url_kwargs[arg] + "<br>"
@@ -1058,7 +1069,7 @@ function init() {
             ["false", "0"].includes(gl) ? 1 : 0
     tristate(webgl, state)
 
-    select_columns()   // plots data
+    select_columns(opt)   // plots data
     if (fs != undefined) expand.click()
 }
 
@@ -1081,6 +1092,8 @@ document.getElementById("share").onclick = function() {
          +  (title  && "title="+title+"&")
          +  (cbtitle&& "cbtitle="+cbtitle+"&")
     if (!webgl.indeterminate) _url += "gl="+webgl.checked+"&"
+    if (graph.layout['xaxis'].type == 'log') _url += 'xlog&'
+    if (graph.layout['yaxis'].type == 'log') _url += 'ylog&'
     // encode modulo %, logical & and add + operators
     encode = x => (x.replace(/%/g, "%25").replace(/&/g, "%26").replace(/"/g, "%22").replace(/\+/g, '%2B') )
     _url += [...dropcells].map(x => (val=x.innerText.replace("\n", "")) && x.id+'='+encode(val)).filter(x => x).join('&')
@@ -1543,12 +1556,5 @@ to check: drop is in prev_sel
 }
 
 </script>
-
-<div id="plottyp" bla='"https://github.com/plotly/plotly-icons/tree/master/src/svg https://plotly-icons.ineffable.digital/">
-   <image src="https://raw.githubusercontent.com/plotly/plotly-icons/master/src/svg/plot-scatter.svg" class="plotypicon">
-   <image src="https://raw.githubusercontent.com/plotly/plotly-icons/master/src/svg/plot-error-bars.svg" class="plotypicon">
-   <image src="https://raw.githubusercontent.com/plotly/plotly-icons/master/src/svg/plot-line.svg" class="plotypicon">
-   <image src="https://raw.githubusercontent.com/plotly/plotly-icons/master/src/svg/plot-histogram.svg" class="plotypicon"'>
-</div>
 
 </html>
