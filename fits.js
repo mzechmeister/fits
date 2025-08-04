@@ -164,6 +164,7 @@ async function fitsdata(fitsobj, ext=0) {
         if (hdu.bitpix == 64) d = [...d].map(Number)   // convert BigInt64Array to array (to prevent: can't convert BigInt to number)
         bzero = hdu.hdr['BZERO'] || 0
         bscale = hdu.hdr['BSCALE'] || 1
+        if (hdu.bitpix==16 && bzero==2**16/2) d = new Uint16Array(d)   // bzero larger than range of signed short => unsigned short (or Int32Array)
         if (bzero!=0 || bscale!=1)
             d = d.map(x => bscale * x + bzero)
         d.dim = hdu.dim
