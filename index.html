@@ -295,6 +295,10 @@ th {
   stroke-width: 0.5px;
 }
 
+.extname {
+   font-weight: bold;
+}
+
 </style>
 
 </head>
@@ -393,7 +397,7 @@ async function doit(filename) {
     }
     obj = hdulist[0].hdr['OBJECT']
     hduinfo.onclick = e => e.target.className!="colname"   // ignore colnames in clicks
-    fileinfo.innerHTML = hdulist[0].filename + (obj? ' ['+obj+']': '')
+    fileinfo.innerHTML = hdulist[0].filename + (obj? ' [<b>'+obj+'</b>]': '')
     fileinfo.className = ''
     hduinfo.innerHTML = ''
     for (hdu of hdulist) {
@@ -413,7 +417,7 @@ async function doit(filename) {
             if (col.fmtrep > 1) colnames += `<button onclick="show(${k}, {colname: '${col.name}'}); return false"><i class="fab fa-instagram"></i></button>`
         }
         if (colnames) colnames = '<span class="colnames">' + colnames + '</span>'
-        var summary = `${icon} ${k} [${extname}${dim}] ${colnames} ${but}`
+        var summary = `${icon} <span style="color:grey">${k}</span> [<span class="extname">${extname}</span>${dim}] ${colnames} ${but}`
         hduinfo.innerHTML += '<details id="tab_'+k+'"><summary>'+ summary + '</summary>' +
             ' <ol><li>'+hdu.cards.join("\n<li>")+'</ol>' +
             '</details>'
