@@ -653,6 +653,7 @@ func.onchange = redraw
 zoom.oninput = locked_zoom
 
 document.body.onkeyup = e => {
+    if (e.target.tagName=='INPUT') return
     if (e.key == "+") {++zoom.value; do_zoom()}
     else if (e.key == "-") {--zoom.value; do_zoom()}
     // unzoom
