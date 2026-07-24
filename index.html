@@ -33,7 +33,7 @@ li > span {
 ol {
   counter-reset: item;
   padding: 2px;
-  margin-left: 40px;
+  margin-left: 7ch;
 }
 
 li {
@@ -48,8 +48,8 @@ li::marker {
   float: right;
 }
 
-#hduinfo i {
-  width: 16px;
+summary [class*=" fa-"] {
+  width: 3ch;
   padding: 0;
 }
 
@@ -113,7 +113,7 @@ li::marker {
 
 details {
   clear: both;   /* float button the very end in every row */
-  padding-left: 2ch;
+  padding-left: 3ch;
   pointer-events: none;
   position: relative;
   transform: rotate(0deg);  /* needed for sticky */
@@ -126,6 +126,7 @@ details * {
 summary {
   cursor: pointer;
   display: inline list-item;
+  margin-left: -3ch;
   position: sticky;
   top: 0.2em;
   background: #FFFC;
@@ -141,16 +142,13 @@ summary::marker {
 
 summary::before {
   background: linear-gradient( rgba(30, 144, 255, 0.7), rgba(30, 144, 255, 0.2));
-  content: "▶";
+  content: "";
   height: 100%;
   left: 0px;
   position: fixed;
   top: 0;
-  width: 2ch;
-}
-
-[open] > summary:before {
-  content: "▼";
+  width: 3ch;
+  z-index:-1;
 }
 
 #hduinfo button {
@@ -311,14 +309,14 @@ th {
 <div id="hduinfo"></div>
 
 <details id="plotcontainer">
-<summary>plot</summary>
+<summary><i class="fas fa-chart-line"></i> plot</summary>
 <div class="resizeable_iframe" style="height: 400px; clear: both;">
 <iframe id="fitsgraph" width="100%" height="100%" style="resize: both;"></iframe>
 </div>
 </details>
 
 <details id="dispcontainer">
-<summary>display</summary>
+<summary><i class="fab fa-instagram"></i> display</summary>
 <br>
 <table style="text-align: left; display: inline-block;">
   <tr>
