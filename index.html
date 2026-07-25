@@ -46,16 +46,15 @@ li::marker {
 
 .fa-github, .fa-share-alt {
   float: right;
+  padding: 0px 4px;
 }
 
 summary [class*=" fa-"] {
   width: 3rch;
-  padding: 0;
 }
 
 [class*=" fa-"] {
   color: black;
-  padding: 0px 4px;
   text-align: center;
 }
 
@@ -140,16 +139,14 @@ summary span:hover {
 }
 
 summary::marker {
-  content: "";
+  content: none;
 }
 
 summary::before {
   background: linear-gradient( rgba(30, 144, 255, 0.7), rgba(30, 144, 255, 0.2));
   content: "";
   height: 100%;
-  left: 0px;
   position: fixed;
-  top: 0;
   width: 3rch;
   z-index:-1;
 }
@@ -289,7 +286,7 @@ input[type="number"] {
 }
 
 th {
-    font-weight: normal;
+  font-weight: normal;
 }
 
 .histbar {
@@ -299,7 +296,7 @@ th {
 }
 
 .extname {
-   font-weight: bold;
+  font-weight: bold;
 }
 
 </style>
