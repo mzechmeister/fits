@@ -129,10 +129,13 @@ summary {
   margin-left: -3ch;
   position: sticky;
   top: 0.2em;
+}
+
+summary > span{
   background: #FFFC;
 }
 
-summary:hover {
+summary span:hover {
   background: #eef;
 }
 
@@ -417,8 +420,8 @@ async function doit(filename) {
             if (col.fmtrep > 1) colnames += `<button onclick="show(${k}, {colname: '${col.name}'}); return false"><i class="fab fa-instagram"></i></button>`
         }
         if (colnames) colnames = '<span class="colnames">' + colnames + '</span>'
-        var summary = `${icon} <span style="color:grey">${k}</span> [<span class="extname">${extname}</span>${dim}] ${colnames} ${but}`
-        hduinfo.innerHTML += '<details id="tab_'+k+'"><summary>'+ summary + '</summary>' +
+        var summary = `${icon}<span> <span style="color:grey">${k}</span> [<span class="extname">${extname}</span>${dim}] ${colnames}</span> ${but}`
+        hduinfo.innerHTML += '<details id="tab_'+k+'"><summary>'+ summary + '</span></summary>' +
             ' <ol><li>'+hdu.cards.join("\n<li>")+'</ol>' +
             '</details>'
     }
