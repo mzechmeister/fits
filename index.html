@@ -45,6 +45,7 @@ li::marker {
 }
 
 .fa-github, .fa-share-alt {
+  color: black;
   float: right;
   padding: 0px 4px;
 }
@@ -54,7 +55,6 @@ summary [class*=" fa-"] {
 }
 
 [class*=" fa-"] {
-  color: black;
   text-align: center;
 }
 
@@ -84,6 +84,7 @@ summary [class*=" fa-"] {
     transform-origin: 0 0;
     transform: scale(1,-1) translate(0,-100%);
     vertical-align: top;
+    z-index: -1;
 }
 
 #x, #y {
@@ -110,7 +111,8 @@ summary [class*=" fa-"] {
   border: none;
 }
 
-details {
+body > details,
+#hduinfo > details {
   clear: both;   /* float button the very end in every row */
   padding-left: 3rch;
   pointer-events: none;
@@ -118,11 +120,13 @@ details {
   transform: rotate(0deg);  /* needed for sticky */
 }
 
-details * {
+body > details *,
+#hduinfo > details * {
   pointer-events: auto;
 }
 
-summary {
+body > details > summary,
+#hduinfo > details > summary {
   cursor: pointer;
   display: inline list-item;
   margin-left: -3rch;
@@ -142,7 +146,8 @@ summary::marker {
   content: none;
 }
 
-summary::before {
+body > details > summary::before,
+#hduinfo > details > summary::before {
   background: linear-gradient( rgba(30, 144, 255, 0.7), rgba(30, 144, 255, 0.2));
   content: "";
   height: 100%;
@@ -230,18 +235,18 @@ summary::before {
   float: right;
 }
 
-#modebar label {
+#modebar > label, .flip-wrapper summary, .flip-wrapper label {
   border-radius: 4px;
   color: red;
   padding: 8px;
   width: 1.25em;
 }
 
-#modebar label:hover {
+#modebar > label:hover, .flip-wrapper summary:hover, .flip-options [for*="flip-"]:hover  {
   background: #ddd7;
 }
 
-#modebar label:active {
+#modebar label:active, .flip-wrapper summary:active, .flip-options [for*="flip-"]:active  {
   background: #7775;
 }
 
@@ -299,6 +304,47 @@ th {
   font-weight: bold;
 }
 
+[id^=flip] {display: none}
+.flip-wrapper {
+  display: inline-block;
+  position: relative;
+  text-align: center;
+}
+.flip-options {
+  background: #fff;
+  border: 2px solid #007bff;
+  border-radius: .4rem;
+  box-sizing: border-box;
+  display: flex;
+  flex-wrap: wrap;
+  left: 0;
+  position: absolute; 
+  width: 200%;
+  top: 100%;
+  z-index: 10;
+}
+.flip-options label {
+  box-sizing: border-box;
+  align-items: center;
+  display: flex;
+  flex: 0 0 50%;
+  justify-content: center;
+}
+.flip-options [for*="flip-"]:hover {
+  color: #555;
+}
+
+#flip-none:not(:checked) ~ .flip-wrapper [for="flip-none"],
+#flip-h:not(:checked) ~ .flip-wrapper [for="flip-h"],
+#flip-v:not(:checked) ~ .flip-wrapper [for="flip-v"],
+#flip-both:not(:checked) ~ .flip-wrapper [for="flip-both"] {
+  color: #bbb;
+}
+.fa-sort-amount-down-alt {rotate: 270deg;}
+#flip-h:checked ~ .flip-wrapper summary {transform: scaleY(-1)}
+#flip-v:checked ~ .flip-wrapper summary {transform: scaleX(-1)}
+#flip-both:checked ~ .flip-wrapper summary {transform: rotate(180deg)}
+
 </style>
 
 </head>
@@ -352,6 +398,19 @@ zoom: <input id="zoomfac" style="width: 7ch" onchange="zoom.value=Math.log2(zoom
 <input id="sharp" type="checkbox"><label for="sharp">sharp</label>
 <input id="fullscreen" type="checkbox">
 <span id="modebar">
+  <input type="radio" name="flip" id="flip-none" value="scale(1,-1) translate(0,-100%)" checked>
+  <input type="radio" name="flip" id="flip-h"    value="scale(-1,-1) translate(-100%,-100%)">
+  <input type="radio" name="flip" id="flip-v"    value="scale(1,1)">
+  <input type="radio" name="flip" id="flip-both" value="scale(-1,1) translate(-100%,0)">
+  <details class="flip-wrapper">
+    <summary title="Orientation" class="fas fa-chart-bar fa-sort-amount-down-alt"></summary>
+    <div class="flip-options">
+    <label for="flip-none" class="fas fa-sort-amount-down-alt"   title="original"></label>
+    <label for="flip-h"    class="fas fa-sort-amount-down-alt fa-flip-vertical" title="horizontal flip"></label>
+    <label for="flip-v"    class="fas fa-sort-amount-down-alt fa-flip-horizontal" title="vertical flip"></label>
+    <label for="flip-both" class="fas fa-sort-amount-down-alt fa-flip-both"       title="rotate 180°"></label>
+    </div>
+  </details>
 <label class="fa fa-tint" onclick="(colormap.selectedOptions[0].nextElementSibling || colormap.options[1]).selected = true; colormap.onchange()"></label><label for="center" class="fas fa-bullseye"></label><label for="fullscreen" class="fas fa-expand"></label>
 </span>
 <br>
@@ -691,6 +750,19 @@ doit(url.value).then(async e => {
       fitsplot(plotext)
 })
 
+const flipwrap = document.querySelector('.flip-wrapper');
+document.addEventListener('click', function (e) {
+   // collapse when losing focus
+   if (flipwrap.contains(e.target)) return;
+   if (e.target.matches('[name="flip"]')) return;
+   flipwrap.open = false;
+});
+
+document.querySelectorAll('input[name="flip"]').forEach(radio => {
+   radio.addEventListener('change', () => {
+      fitsdisplay.style['transform'] = radio.value;
+   });
+});
 </script>
 
 </html>
