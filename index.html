@@ -51,7 +51,7 @@ li::marker {
 }
 
 summary [class*=" fa-"] {
-  width: 3rch;
+  width: var(--lpad);
 }
 
 [class*=" fa-"] {
@@ -113,8 +113,9 @@ summary [class*=" fa-"] {
 
 body > details,
 #hduinfo > details {
+  --lpad: 2em;
   clear: both;   /* float button the very end in every row */
-  padding-left: 3rch;
+  padding-left: var(--lpad);
   pointer-events: none;
   position: relative;
   transform: rotate(0deg);  /* needed for sticky */
@@ -129,7 +130,7 @@ body > details > summary,
 #hduinfo > details > summary {
   cursor: pointer;
   display: inline list-item;
-  margin-left: -3rch;
+  margin-left: calc(-1 * var(--lpad));
   position: sticky;
   top: 0.2em;
 }
@@ -152,7 +153,7 @@ body > details > summary::before,
   content: "";
   height: 100%;
   position: fixed;
-  width: 3rch;
+  width: var(--lpad);
   z-index:-1;
 }
 
