@@ -340,14 +340,23 @@ th {
 }
 
 #flip-none:not(:checked) ~ .flip-wrapper [for="flip-none"],
+#flip-swap:not(:checked) ~ .flip-wrapper [for="flip-swap"],
 #flip-h:not(:checked) ~ .flip-wrapper [for="flip-h"],
+#flip-90:not(:checked) ~ .flip-wrapper [for="flip-90"],
 #flip-v:not(:checked) ~ .flip-wrapper [for="flip-v"],
-#flip-both:not(:checked) ~ .flip-wrapper [for="flip-both"] {
+#flip-270:not(:checked) ~ .flip-wrapper [for="flip-270"],
+#flip-both:not(:checked) ~ .flip-wrapper [for="flip-both"],
+#flip-180swap:not(:checked) ~ .flip-wrapper [for="flip-180swap"] {
   color: #bbb;
 }
+
+#flip-swap:checked ~ .flip-wrapper summary {transform: rotate(90deg) scale(-1,1)}
 #flip-h:checked ~ .flip-wrapper summary {transform: scaleX(-1)}
+#flip-90:checked ~ .flip-wrapper summary {transform: rotate(270deg)}
 #flip-v:checked ~ .flip-wrapper summary {transform: scaleY(-1)}
+#flip-270:checked ~ .flip-wrapper summary {transform: rotate(90deg)}
 #flip-both:checked ~ .flip-wrapper summary {transform: rotate(180deg)}
+#flip-180swap:checked ~ .flip-wrapper summary {transform: rotate(90deg) scale(1,-1)}
 
 </style>
 
@@ -403,16 +412,24 @@ zoom: <input id="zoomfac" style="width: 7ch" onchange="zoom.value=Math.log2(zoom
 <input id="sharp" type="checkbox"><label for="sharp">sharp</label>
 <span id="modebar">
   <input type="radio" name="flip" id="flip-none" value="scale(1,-1) translate(0,-100%)" checked>
+  <input type="radio" name="flip" id="flip-swap" value="translate(50%, 50%) rotate(90deg) scale(-1,-1) translate(-50%, -50%)">
   <input type="radio" name="flip" id="flip-h"    value="scale(-1,-1) translate(-100%,-100%)">
+  <input type="radio" name="flip" id="flip-90" value="translate(50%, 50%) rotate(90deg) scale(-1,1) translate(-50%, -50%)">
   <input type="radio" name="flip" id="flip-v"    value="scale(1,1)">
+  <input type="radio" name="flip" id="flip-270" value="translate(50%, 50%) rotate(90deg) scale(1,-1) translate(-50%, -50%)">
   <input type="radio" name="flip" id="flip-both" value="scale(-1,1) translate(-100%,0)">
+  <input type="radio" name="flip" id="flip-180swap" value="translate(50%, 50%) rotate(90deg) scale(1,1) translate(-50%, -50%)">
   <details class="flip-wrapper">
     <summary title="Orientation" class="fas fa-chart-bar"></summary>
     <div class="flip-options">
     <label for="flip-none" class="fas fa-chart-bar"   title="original"></label>
+    <label for="flip-swap" class="fas fa-chart-bar fa-flip-horizontal" title="swap xy" style="rotate: 90deg;"></label>
     <label for="flip-h"    class="fas fa-chart-bar fa-flip-horizontal" title="horizontal flip"></label>
-    <label for="flip-v"    class="fas fa-chart-bar fa-flip-vertical" title="vertical flip"></label>
+    <label for="flip-90"   class="fas fa-chart-bar"       title="rotate 90°" style="rotate: 270deg;"></label>
+    <label for="flip-v"    class="fas fa-chart-bar fa-flip-vertical"   title="vertical flip"></label>
+    <label for="flip-270"  class="fas fa-chart-bar fa-rotate-90"       title="rotate 270°"></label>
     <label for="flip-both" class="fas fa-chart-bar fa-flip-both"       title="rotate 180°"></label>
+    <label for="flip-180swap" class="fas fa-chart-bar fa-flip-horizontal"  title="rotate 180° + swap" style="rotate: 270deg;"></label>
     </div>
   </details>
 <label class="fa fa-tint" onclick="(colormap.selectedOptions[0].nextElementSibling || colormap.options[1]).selected = true; colormap.onchange()"></label><label for="center" class="fas fa-bullseye"></label><label for="fullscreen" class="fas fa-expand"></label>
