@@ -345,9 +345,8 @@ th {
 #flip-both:not(:checked) ~ .flip-wrapper [for="flip-both"] {
   color: #bbb;
 }
-.fa-sort-amount-down-alt {rotate: 270deg;}
-#flip-h:checked ~ .flip-wrapper summary {transform: scaleY(-1)}
-#flip-v:checked ~ .flip-wrapper summary {transform: scaleX(-1)}
+#flip-h:checked ~ .flip-wrapper summary {transform: scaleX(-1)}
+#flip-v:checked ~ .flip-wrapper summary {transform: scaleY(-1)}
 #flip-both:checked ~ .flip-wrapper summary {transform: rotate(180deg)}
 
 </style>
@@ -408,12 +407,12 @@ zoom: <input id="zoomfac" style="width: 7ch" onchange="zoom.value=Math.log2(zoom
   <input type="radio" name="flip" id="flip-v"    value="scale(1,1)">
   <input type="radio" name="flip" id="flip-both" value="scale(-1,1) translate(-100%,0)">
   <details class="flip-wrapper">
-    <summary title="Orientation" class="fas fa-chart-bar fa-sort-amount-down-alt"></summary>
+    <summary title="Orientation" class="fas fa-chart-bar"></summary>
     <div class="flip-options">
-    <label for="flip-none" class="fas fa-sort-amount-down-alt"   title="original"></label>
-    <label for="flip-h"    class="fas fa-sort-amount-down-alt fa-flip-vertical" title="horizontal flip"></label>
-    <label for="flip-v"    class="fas fa-sort-amount-down-alt fa-flip-horizontal" title="vertical flip"></label>
-    <label for="flip-both" class="fas fa-sort-amount-down-alt fa-flip-both"       title="rotate 180°"></label>
+    <label for="flip-none" class="fas fa-chart-bar"   title="original"></label>
+    <label for="flip-h"    class="fas fa-chart-bar fa-flip-horizontal" title="horizontal flip"></label>
+    <label for="flip-v"    class="fas fa-chart-bar fa-flip-vertical" title="vertical flip"></label>
+    <label for="flip-both" class="fas fa-chart-bar fa-flip-both"       title="rotate 180°"></label>
     </div>
   </details>
 <label class="fa fa-tint" onclick="(colormap.selectedOptions[0].nextElementSibling || colormap.options[1]).selected = true; colormap.onchange()"></label><label for="center" class="fas fa-bullseye"></label><label for="fullscreen" class="fas fa-expand"></label>
