@@ -786,6 +786,11 @@ document.querySelectorAll('input[name="flip"]').forEach(radio => {
       fitsdisplay.style['transform'] = radio.value;
    });
 });
+
+// mouseScroll
+fitsdisplay.addEventListener("mousedown", e => display_container.setPointerCapture(e.pointerId));   // listen to inner element to exclude scrollbar
+display_container.addEventListener("mouseup", e => display_container.releasePointerCapture(e.pointerId));
+display_container.addEventListener("mousemove", e => display_container.hasPointerCapture(e.pointerId) && (display_container.scrollLeft -= e.movementX, display_container.scrollTop -= e.movementY))
 </script>
 
 </html>
