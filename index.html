@@ -121,6 +121,10 @@ body > details,
   transform: rotate(0deg);  /* needed for sticky */
 }
 
+#fullscreen:checked + #dispcontainer {
+  transform: none;
+}
+
 body > details *,
 #hduinfo > details * {
   pointer-events: auto;
@@ -255,14 +259,14 @@ body > details > summary::before,
   display: none;
 }
 
-#fullscreen:checked + #modebar {
+#fullscreen:checked + #dispcontainer #modebar {
   position: fixed;
   top: 0.5em;
   z-index: 99;
   right: 2em;
 }
 
-#fullscreen:checked ~ div {
+#fullscreen:checked + #dispcontainer #display_container {
   background: white;
   bottom: 0;
   height: auto !important;
@@ -366,6 +370,7 @@ th {
 </div>
 </details>
 
+<input id="fullscreen" type="checkbox">
 <details id="dispcontainer">
 <summary><i class="fab fa-instagram"></i> display</summary>
 <br>
@@ -397,7 +402,6 @@ x: <input id="x_in" type="number" onchange="panTo()"> y: <input id="y_in" type="
 
 zoom: <input id="zoomfac" style="width: 7ch" onchange="zoom.value=Math.log2(zoomfac.value); zoom.oninput()"><input id="zoomyfac" style="width: 7ch" onchange="do_zoom()">  <input type="range" id="zoom" min="-6" max="6" step="0.5">
 <input id="sharp" type="checkbox"><label for="sharp">sharp</label>
-<input id="fullscreen" type="checkbox">
 <span id="modebar">
   <input type="radio" name="flip" id="flip-none" value="scale(1,-1) translate(0,-100%)" checked>
   <input type="radio" name="flip" id="flip-h"    value="scale(-1,-1) translate(-100%,-100%)">
