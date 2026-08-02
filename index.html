@@ -411,8 +411,8 @@ x: <input id="x_in" type="number" onchange="panTo()"> y: <input id="y_in" type="
 zoom: <input id="zoomfac" style="width: 7ch" onchange="zoom.value=Math.log2(zoomfac.value); zoom.oninput()"><input id="zoomyfac" style="width: 7ch" onchange="do_zoom()">  <input type="range" id="zoom" min="-6" max="6" step="0.5">
 <input id="sharp" type="checkbox"><label for="sharp">sharp</label>
 <span id="modebar">
-<input id="show_mouse_tag" type="checkbox" style="display: none">
-<label for="show_mouse_tag" class="fa fa-tag" title="Label mouse" onclick="mouse_tag.style.display = show_mouse_tag.checked ? 'none' : ''"></label>
+<input id="show_mouse_tag" type="checkbox" onclick="mouse_tag.style.display = show_mouse_tag.checked ? '' : 'none'" style="display: none">
+<label for="show_mouse_tag" class="fa fa-tag" title="Label mouse"></label>
 <label class="fa fa-plus-square" onclick="zoom.value = +zoom.value + 1; locked_zoom()"></label>
 <label class="fa fa-minus-square" onclick="zoom.value = +zoom.value - 1; locked_zoom()"></label>
   <input type="radio" name="flip" id="flip-none" value="scale(1,-1) translate(0,-100%)" checked>
