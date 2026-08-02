@@ -436,6 +436,8 @@ zoom: <input id="zoomfac" style="width: 7ch" onchange="zoom.value=Math.log2(zoom
     <label for="flip-180swap" class="fas fa-chart-bar fa-flip-horizontal"  title="rotate 180° + swap" style="rotate: 270deg;"></label>
     </div>
   </details>
+<input id="color_invert" type="checkbox" style="display: none" onclick="colormap.onchange()">
+<label class="fa fa-adjust" for="color_invert"></label>
 <label class="fa fa-tint" onclick="(colormap.selectedOptions[0].nextElementSibling || colormap.options[1]).selected = true; colormap.onchange()"></label><label for="center" class="fas fa-bullseye"></label><label for="fullscreen" class="fas fa-expand"></label>
 </span>
 <br>
@@ -573,7 +575,8 @@ function display(a) {
     var imgData = ctx.getImageData(0,0, ...a.dim);
     var data = imgData.data;
 
-    cm = {bb: cmbb, grey: cmgrey}[colormap.value] || cmgrey
+    cm = cm0 = {bb: cmbb, grey: cmgrey}[colormap.value] || cmbb
+    if (color_invert.checked) cm = x => cm0(1-x)
     // put rgba values
     for (var i=0, j=0; i<data.length; i+=4, ++j) {
         [data[i], data[i+1], data[i+2]] = cm(_func(a[j])).map(x => 0xFF * x);
