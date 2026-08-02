@@ -411,6 +411,8 @@ x: <input id="x_in" type="number" onchange="panTo()"> y: <input id="y_in" type="
 zoom: <input id="zoomfac" style="width: 7ch" onchange="zoom.value=Math.log2(zoomfac.value); zoom.oninput()"><input id="zoomyfac" style="width: 7ch" onchange="do_zoom()">  <input type="range" id="zoom" min="-6" max="6" step="0.5">
 <input id="sharp" type="checkbox"><label for="sharp">sharp</label>
 <span id="modebar">
+<input id="show_mouse_tag" type="checkbox" style="display: none">
+<label for="show_mouse_tag" class="fa fa-tag" title="Label mouse" onclick="mouse_tag.style.display = show_mouse_tag.checked ? 'none' : ''"></label>
 <label class="fa fa-plus-square" onclick="zoom.value = +zoom.value + 1; locked_zoom()"></label>
 <label class="fa fa-minus-square" onclick="zoom.value = +zoom.value - 1; locked_zoom()"></label>
   <input type="radio" name="flip" id="flip-none" value="scale(1,-1) translate(0,-100%)" checked>
@@ -440,6 +442,7 @@ zoom: <input id="zoomfac" style="width: 7ch" onchange="zoom.value=Math.log2(zoom
 <span id="displayinfo"></span><br>
 <div id="display_container" tabindex="0"><canvas id='fitsdisplay' height="0"></canvas></div>
 </details>
+<div id="mouse_tag" style="color: red; pointer-events: none; position: absolute;"></span>
 
 <script>
 
@@ -750,8 +753,13 @@ fitsdisplay.onclick = e => {
 }
 
 fitsdisplay.onmousemove = e => {
-    p = getMousePos(e);
-    displayinfo.innerHTML = " x: "+p.i.toFixed(3)+" y: "+p.j.toFixed(3) +" value: "+ z(p.i,p.j)+ " color: "+ _func(z(p.i,p.j)).toFixed(6)
+    let p = getMousePos(e), zval = z(p.i,p.j)
+    displayinfo.innerHTML = " x: "+p.i.toFixed(3)+" y: "+p.j.toFixed(3)+" value: "+zval+" color: "+ _func(zval).toFixed(6)
+    if (show_mouse_tag.checked) {
+        mouse_tag.innerHTML = p.i.toFixed(0) + ', ' + p.j.toFixed(0) + ': ' + zval
+        mouse_tag.style.left = e.pageX + 20 + 'px'
+        mouse_tag.style.top = e.pageY + 'px'
+    }
 }
 
 
